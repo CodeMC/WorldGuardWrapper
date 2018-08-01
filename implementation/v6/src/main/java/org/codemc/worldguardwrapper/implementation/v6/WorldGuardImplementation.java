@@ -13,6 +13,7 @@ import lombok.NonNull;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.codemc.worldguardwrapper.implementation.AbstractWorldGuardImplementation;
 
 import java.util.Optional;
@@ -45,6 +46,11 @@ public class WorldGuardImplementation extends AbstractWorldGuardImplementation {
 
     private Optional<StateFlag.State> queryState(Player player, @NonNull Location location, @NonNull StateFlag... stateFlags) {
         return getApplicableRegions(location).map(applicableRegions -> applicableRegions.queryState(wrapPlayer(player).orElse(null), stateFlags));
+    }
+
+    @Override
+    public JavaPlugin getWorldGuardPlugin() {
+        return WorldGuardPlugin.inst();
     }
 
     @Override

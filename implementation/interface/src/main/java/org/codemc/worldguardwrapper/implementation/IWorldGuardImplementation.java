@@ -3,10 +3,13 @@ package org.codemc.worldguardwrapper.implementation;
 import lombok.NonNull;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Optional;
 
 public interface IWorldGuardImplementation {
+
+    JavaPlugin getWorldGuardPlugin();
 
     int getApiVersion();
 
