@@ -22,6 +22,10 @@
 
     <name>WorldGuardWrapper-Implementation</name>
 
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
     <repositories>
         <repository>
             <id>codemc-repo</id>
