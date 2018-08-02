@@ -16,19 +16,19 @@ public class StringFlag extends AbstractFlag<String> {
         super(name, String.class, defaultValue);
     }
 
-	@Override
-	public Object serialize(String value) {
-		return value;
-	}
+    @Override
+    public Object serialize(String value) {
+        return value;
+    }
 
-	@Override
-	public String deserialize(Object serialized) {
-		return (String) serialized;
-	}
+    @Override
+    public String deserialize(Object serialized) {
+        return (String) serialized;
+    }
 
-	@Override
-	public String parse(Player player, String userInput) {
-		return userInput;
-	}
+    @Override
+    public String parse(Player player, String userInput) {
+        return userInput;
+    }
 
 }

@@ -16,18 +16,18 @@ public class BooleanFlag extends AbstractFlag<Boolean> {
         super(name, boolean.class, defaultValue);
     }
 
-	@Override
-	public Object serialize(Boolean value) {
-		return value;
-	}
+    @Override
+    public Object serialize(Boolean value) {
+        return value;
+    }
 
-	@Override
-	public Boolean deserialize(Object serialized) {
-		return (Boolean) serialized;
-	}
+    @Override
+    public Boolean deserialize(Object serialized) {
+        return (Boolean) serialized;
+    }
 
-	@Override
-	public Boolean parse(Player player, String userInput) {        
+    @Override
+    public Boolean parse(Player player, String userInput) {        
         if (userInput.equalsIgnoreCase("true") || userInput.equalsIgnoreCase("yes")
                 || userInput.equalsIgnoreCase("on")
                 || userInput.equalsIgnoreCase("1")) {
@@ -39,6 +39,6 @@ public class BooleanFlag extends AbstractFlag<Boolean> {
         } else {
             return null;
         }
-	}
+    }
 
 }

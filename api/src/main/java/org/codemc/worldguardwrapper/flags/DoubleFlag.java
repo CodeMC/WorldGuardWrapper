@@ -8,31 +8,31 @@ import org.codemc.worldguardwrapper.implementation.AbstractFlag;
  */
 public class DoubleFlag extends AbstractFlag<Double> {
 
-	public DoubleFlag(String name) {
-		this(name, 0d);
-	}
+    public DoubleFlag(String name) {
+        this(name, 0d);
+    }
 
     public DoubleFlag(String name, double defaultValue) {
         super(name, double.class, defaultValue);
     }
 
-	@Override
-	public Object serialize(Double value) {
-		return value;
-	}
+    @Override
+    public Object serialize(Double value) {
+        return value;
+    }
 
-	@Override
-	public Double deserialize(Object serialized) {
-		if (serialized instanceof Number) {
+    @Override
+    public Double deserialize(Object serialized) {
+        if (serialized instanceof Number) {
             return ((Number) serialized).doubleValue();
         } else {
             return null;
         }
-	}
+    }
 
-	@Override
-	public Double parse(Player player, String userInput) {
-		return Double.parseDouble(userInput);
-	}
+    @Override
+    public Double parse(Player player, String userInput) {
+        return Double.parseDouble(userInput);
+    }
 
 }
