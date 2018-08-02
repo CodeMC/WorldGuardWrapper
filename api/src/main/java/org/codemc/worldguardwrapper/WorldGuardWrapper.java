@@ -1,20 +1,26 @@
 package org.codemc.worldguardwrapper;
 
-import lombok.experimental.Delegate;
 import org.codemc.worldguardwrapper.implementation.IWorldGuardImplementation;
+
+import lombok.experimental.Delegate;
 
 public class WorldGuardWrapper implements IWorldGuardImplementation {
 
     @Delegate
-    private IWorldGuardImplementation implementation;
+    private IWorldGuardImplementation delegate;
 
-    public WorldGuardWrapper() {
+    private WorldGuardWrapper() {
         // TODO: better way to detect version
         try {
             Class.forName("com.sk89q.worldguard.WorldGuard");
-            implementation = new org.codemc.worldguardwrapper.implementation.v7.WorldGuardImplementation();
+            delegate = new org.codemc.worldguardwrapper.implementation.v7.WorldGuardImplementation();
         } catch (ClassNotFoundException e) {
-            implementation = new org.codemc.worldguardwrapper.implementation.v6.WorldGuardImplementation();
+            delegate = new org.codemc.worldguardwrapper.implementation.v6.WorldGuardImplementation();
         }
     }
+
+    public WorldGuardWrapper getInstance() {
+        return this;
+    }
+    
 }
