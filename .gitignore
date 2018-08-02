@@ -41,6 +41,7 @@ local.properties
 .cproject
 .classpath
 .buildpath
+.factorypath
 .target
 .texlipse
 
@@ -66,3 +67,6 @@ nb-configuration.xml
 
 # Git
 !.gitignore
+
+# VSCode
+.vscode/
