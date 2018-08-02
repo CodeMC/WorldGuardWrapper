@@ -6,6 +6,15 @@ import lombok.experimental.Delegate;
 
 public class WorldGuardWrapper implements IWorldGuardImplementation {
 
+    private static WorldGuardWrapper instance;
+
+    public static WorldGuardWrapper getInstance() {
+        if (instance == null) {
+            instance = new WorldGuardWrapper();
+        }
+        return instance;
+    }
+
     @Delegate
     private IWorldGuardImplementation delegate;
 
@@ -17,10 +26,6 @@ public class WorldGuardWrapper implements IWorldGuardImplementation {
         } catch (ClassNotFoundException e) {
             delegate = new org.codemc.worldguardwrapper.implementation.v6.WorldGuardImplementation();
         }
-    }
-
-    public WorldGuardWrapper getInstance() {
-        return this;
     }
     
 }
