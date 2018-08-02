@@ -1,22 +1,26 @@
 package org.codemc.worldguardwrapper.implementation.v6;
 
+import java.util.Optional;
+
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.Flag;
+import com.sk89q.worldguard.protection.flags.FlagContext;
+import com.sk89q.worldguard.protection.flags.InvalidFlagFormat;
 import com.sk89q.worldguard.protection.flags.StateFlag;
-import com.sk89q.worldguard.protection.flags.StringFlag;
 import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
 import com.sk89q.worldguard.protection.managers.RegionManager;
-import lombok.NonNull;
+
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.codemc.worldguardwrapper.implementation.AbstractFlag;
 import org.codemc.worldguardwrapper.implementation.AbstractWorldGuardImplementation;
 
-import java.util.Optional;
+import lombok.NonNull;
 
 public class WorldGuardImplementation extends AbstractWorldGuardImplementation {
 
@@ -58,29 +62,6 @@ public class WorldGuardImplementation extends AbstractWorldGuardImplementation {
         return 6;
     }
 
-    // String flag
-
-    @Override
-    public Optional<String> queryStringFlag(Player player, @NonNull Location location, @NonNull String flagId) {
-        Flag<?> flag = flagRegistry.get(flagId);
-        if (!(flag instanceof StringFlag)) {
-            return Optional.empty();
-        }
-        return queryValue(player, location, (StringFlag) flag);
-    }
-
-    @Override
-    public boolean registerStringFlag(@NonNull String flagId, @NonNull String defaultValue) {
-        try {
-            flagRegistry.register(new StringFlag(flagId, defaultValue));
-            return true;
-        } catch (FlagConflictException ignored) {
-        }
-        return false;
-    }
-
-    // State flag
-
     @Override
     public Optional<Boolean> queryStateFlag(Player player, @NonNull Location location, @NonNull String flagId) {
         Flag<?> flag = flagRegistry.get(flagId);
@@ -94,6 +75,49 @@ public class WorldGuardImplementation extends AbstractWorldGuardImplementation {
     public boolean registerStateFlag(@NonNull String flagId, @NonNull Boolean defaultValue) {
         try {
             flagRegistry.register(new StateFlag(flagId, defaultValue));
+            return true;
+        } catch (FlagConflictException ignored) {
+        }
+        return false;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> Optional<T> queryFlag(Player player, Location location, AbstractFlag<T> flag) {        
+        Flag<?> wgFlag = flagRegistry.get(flag.getName());
+        Object value = queryValue(player, location, wgFlag).orElse(null);
+        if (flag.getType().isInstance(value)) {
+            return Optional.of((T) value);
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public <T> boolean registerFlag(AbstractFlag<T> flag) {
+        Flag<T> wgFlag = new Flag<T>(flag.getName()) {
+            @Override
+            public T getDefault() {
+                return flag.getDefaultValue();
+            }
+
+            @Override
+            public Object marshal(T o) {
+                return flag.serialize(o);
+            }
+
+            @Override
+            public T unmarshal(Object o) {
+                return flag.deserialize(o);
+            }
+
+            @Override
+            public T parseInput(FlagContext context) throws InvalidFlagFormat {
+                return flag.parse(context.getPlayerSender(), context.getUserInput());
+            }
+        };
+
+        try {
+            flagRegistry.register(wgFlag);
             return true;
         } catch (FlagConflictException ignored) {
         }
