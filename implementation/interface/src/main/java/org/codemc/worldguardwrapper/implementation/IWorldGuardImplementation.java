@@ -48,10 +48,23 @@ public interface IWorldGuardImplementation {
      * 
      * @param player   The player
      * @param location The location
+     * @param flagName The name of the flag
+     * @param type     The type of the flag's value
+     * @return The flag's value
+     */
+    <T> Optional<T> queryFlag(Player player, @NonNull Location location, @NonNull String flagName, Class<T> type);
+
+    /**
+     * Query a flag's value for a given player at a given location.
+     * 
+     * @param player   The player
+     * @param location The location
      * @param flag     The flag
      * @return The flag's value
      */
-    <T> Optional<T> queryFlag(Player player, @NonNull Location location, @NonNull AbstractFlag<T> flag);
+    default <T> Optional<T> queryFlag(Player player, @NonNull Location location, @NonNull AbstractFlag<T> flag) {
+        return queryFlag(player, location, flag.getName(), flag.getType());
+    }
 
     /**
      * Register a flag to WorldGuard's flag registry.

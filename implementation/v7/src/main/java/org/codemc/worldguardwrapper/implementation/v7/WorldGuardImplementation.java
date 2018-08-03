@@ -96,10 +96,10 @@ public class WorldGuardImplementation extends AbstractWorldGuardImplementation {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> Optional<T> queryFlag(Player player, Location location, AbstractFlag<T> flag) {        
-        Flag<?> wgFlag = flagRegistry.get(flag.getName());
-        Object value = queryValue(player, location, wgFlag).orElse(null);
-        if (flag.getType().isInstance(value)) {
+    public <T> Optional<T> queryFlag(Player player, Location location, String flagName, Class<T> type) {
+        Flag<?> flag = flagRegistry.get(flagName);
+        Object value = queryValue(player, location, flag).orElse(null);
+        if (type.isInstance(value)) {
             return Optional.of((T) value);
         }
         return Optional.empty();
