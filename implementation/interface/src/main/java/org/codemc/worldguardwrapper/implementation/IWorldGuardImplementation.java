@@ -1,8 +1,11 @@
 package org.codemc.worldguardwrapper.implementation;
 
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -73,4 +76,33 @@ public interface IWorldGuardImplementation {
      * @return Whether the flag has been registered
      */
     <T> boolean registerFlag(@NonNull AbstractFlag<T> flag);
+
+    /**
+     * Get a region by its ID.
+     * 
+     * @param world The world
+     * @param id ID of the region
+     * @return The region
+     */
+    Optional<AbstractRegion> getRegion(World world, String id);
+
+    /**
+     * Get an unmodifiable map of regions containing the state of the
+     * index at the time of call.
+     *
+     * <p>This call is relatively heavy (and may block other threads),
+     * so refrain from calling it frequently.</p>
+     *
+     * @param world The world
+     * @return A map of regions
+     */
+    Map<String, AbstractRegion> getRegions(World world);
+
+    /**
+     * Get a set of regions at the given location.
+     * 
+     * @param location The location
+     * @return A set of regions
+     */
+    Set<AbstractRegion> getRegions(Location location);
 }

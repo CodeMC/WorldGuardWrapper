@@ -1,6 +1,10 @@
 package org.codemc.worldguardwrapper.implementation.v6;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
@@ -12,12 +16,14 @@ import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
 import com.sk89q.worldguard.protection.managers.RegionManager;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.codemc.worldguardwrapper.implementation.AbstractFlag;
+import org.codemc.worldguardwrapper.implementation.AbstractRegion;
 import org.codemc.worldguardwrapper.implementation.AbstractWorldGuardImplementation;
 
 import lombok.NonNull;
@@ -50,6 +56,22 @@ public class WorldGuardImplementation extends AbstractWorldGuardImplementation {
 
     private Optional<StateFlag.State> queryState(Player player, @NonNull Location location, @NonNull StateFlag... stateFlags) {
         return getApplicableRegions(location).map(applicableRegions -> applicableRegions.queryState(wrapPlayer(player).orElse(null), stateFlags));
+    }
+
+    private AbstractRegion toRegion(ProtectedRegion region) {
+        return new AbstractRegion(region.getId()) {
+            @Override
+            public Map<String, Object> getFlags() {
+                Map<String, Object> map = new HashMap<>();
+                region.getFlags().forEach((flag, value) -> map.put(flag.getName(), value));
+                return map;
+            }
+        
+            @Override
+            public Object getFlag(String name) {
+                return region.getFlag(flagRegistry.get(name));
+            }
+        };
     }
 
     @Override
@@ -122,5 +144,34 @@ public class WorldGuardImplementation extends AbstractWorldGuardImplementation {
         } catch (FlagConflictException ignored) {
         }
         return false;
+    }
+
+    @Override
+    public Optional<AbstractRegion> getRegion(World world, String id) {
+        return getWorldManager(world).map(regionManager -> toRegion(regionManager.getRegion(id)));
+    }
+
+    @Override
+    public Map<String, AbstractRegion> getRegions(World world) {
+        RegionManager regionManager = plugin.getRegionManager(world);
+        Map<String, ProtectedRegion> regions = regionManager.getRegions();
+
+        Map<String, AbstractRegion> map = new HashMap<>();
+        regions.forEach((name, region) -> map.put(name, toRegion(region)));
+
+        return map;
+    }
+
+    @Override
+    public Set<AbstractRegion> getRegions(Location location) {
+        ApplicableRegionSet regionSet = getApplicableRegions(location).orElse(null);
+        Set<AbstractRegion> set = new HashSet<>();
+
+        if (regionSet == null) {
+            return set;
+        }
+
+        regionSet.forEach(region -> set.add(toRegion(region)));
+        return set;
     }
 }
