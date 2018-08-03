@@ -11,7 +11,6 @@ import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
-import com.sk89q.worldguard.internal.platform.WorldGuardPlatform;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.FlagContext;
@@ -21,7 +20,6 @@ import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import com.sk89q.worldguard.protection.regions.RegionContainer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -36,15 +34,13 @@ import lombok.NonNull;
 
 public class WorldGuardImplementation extends AbstractWorldGuardImplementation {
 
+    private final WorldGuard core;
     private final FlagRegistry flagRegistry;
-    private final RegionContainer container;
     private final WorldGuardPlugin plugin;
 
     public WorldGuardImplementation() {
-        WorldGuard core = WorldGuard.getInstance();
+        core = WorldGuard.getInstance();
         flagRegistry = core.getFlagRegistry();
-        WorldGuardPlatform platform = core.getPlatform();
-        container = platform.getRegionContainer();
         plugin = WorldGuardPlugin.inst();
     }
 
@@ -57,7 +53,7 @@ public class WorldGuardImplementation extends AbstractWorldGuardImplementation {
     }
 
     private Optional<RegionManager> getWorldManager(@NonNull World world) {
-        return Optional.ofNullable(container.get(BukkitAdapter.adapt(world)));
+        return Optional.ofNullable(core.getPlatform().getRegionContainer().get(BukkitAdapter.adapt(world)));
     }
 
     private Optional<ApplicableRegionSet> getApplicableRegions(@NonNull Location location) {
@@ -167,7 +163,7 @@ public class WorldGuardImplementation extends AbstractWorldGuardImplementation {
 
     @Override
     public Map<String, AbstractRegion> getRegions(World world) {
-        RegionManager regionManager = container.get(new BukkitWorld(world));
+        RegionManager regionManager = core.getPlatform().getRegionContainer().get(new BukkitWorld(world));
         Map<String, ProtectedRegion> regions = regionManager.getRegions();
 
         Map<String, AbstractRegion> map = new HashMap<>();
