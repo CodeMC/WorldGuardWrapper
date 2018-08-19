@@ -81,6 +81,11 @@ public class WorldGuardImplementation extends AbstractWorldGuardImplementation {
             public Object getFlag(String name) {
                 return region.getFlag(flagRegistry.get(name));
             }
+
+            @Override
+            public int getPriority() {
+                return region.getPriority();
+            }
         };
     }
 

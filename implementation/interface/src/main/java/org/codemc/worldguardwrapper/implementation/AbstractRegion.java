@@ -14,5 +14,7 @@ public abstract class AbstractRegion {
     public abstract Object getFlag(String name);
 
     public abstract Map<String, Object> getFlags();
+
+    public abstract int getPriority();
     
 }
