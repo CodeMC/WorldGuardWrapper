@@ -32,7 +32,7 @@ public interface IWorldGuardImplementation {
      * 
      * @param player   The player
      * @param location The location
-     * @param flag     The flag's name 
+     * @param flagName     The flag's name
      * @return The flag's value
      */
     Optional<Boolean> queryStateFlag(Player player, @NonNull Location location, @NonNull String flagName);
