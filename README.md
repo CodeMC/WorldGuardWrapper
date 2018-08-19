@@ -1,5 +1,6 @@
 # WorldGuardWrapper
 [![Build Status](https://ci.codemc.org/buildStatus/icon?job=CodeMC/WorldEditWrapper)](https://ci.codemc.org/view/Author/job/CodeMC/job/WorldEditWrapper/)
+[![Javadocs](https://img.shields.io/badge/docs-javadocs-brightgreen.svg)](https://ci.codemc.org/view/Author/job/CodeMC/job/WorldEditWrapper/javadoc/)
 
 A wrapper for the WorldGuard API that allows plugins to support both v6 and v7 APIs.
 
