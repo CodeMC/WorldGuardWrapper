@@ -1,14 +1,11 @@
 package org.codemc.worldguardwrapper.flags;
 
 import org.bukkit.entity.Player;
-import org.codemc.worldguardwrapper.implementation.AbstractFlag;
 
 /**
  * A flag that stores an enum value.
  */
-public class EnumFlag<T extends Enum<T>> extends AbstractFlag<T> {
-
-    private Class<T> enumClass;
+public class EnumFlag<T extends Enum<T>> extends AbstractWrappedFlag<T> {
 
     public EnumFlag(String name, Class<T> enumClass) {
         this(name, enumClass, null);
@@ -20,11 +17,12 @@ public class EnumFlag<T extends Enum<T>> extends AbstractFlag<T> {
 
     /**
      * Get the enum class.
-     * 
+     * TODO: really needed? we already have getType() -Gab
+     *
      * @return The enum class
      */
     public Class<T> getEnumClass() {
-        return enumClass;
+        return getType();
     }
 
     @Override
@@ -35,7 +33,7 @@ public class EnumFlag<T extends Enum<T>> extends AbstractFlag<T> {
     @Override
     public T deserialize(Object serialized) {
         if (serialized instanceof String) {
-            return Enum.valueOf(enumClass, (String) serialized);
+            return Enum.valueOf(getEnumClass(), (String) serialized);
         } else {
             return null;
         }
@@ -43,7 +41,7 @@ public class EnumFlag<T extends Enum<T>> extends AbstractFlag<T> {
 
     @Override
     public T parse(Player player, String userInput) {
-        return Enum.valueOf(enumClass, userInput);
+        return Enum.valueOf(getEnumClass(), userInput);
     }
-    
+
 }

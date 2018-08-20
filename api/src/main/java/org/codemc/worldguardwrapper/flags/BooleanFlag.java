@@ -1,12 +1,11 @@
 package org.codemc.worldguardwrapper.flags;
 
 import org.bukkit.entity.Player;
-import org.codemc.worldguardwrapper.implementation.AbstractFlag;
 
 /**
  * A flag that stores a boolean.
  */
-public class BooleanFlag extends AbstractFlag<Boolean> {
+public class BooleanFlag extends AbstractWrappedFlag<Boolean> {
 
     public BooleanFlag(String name) {
         this(name, false);
@@ -27,7 +26,7 @@ public class BooleanFlag extends AbstractFlag<Boolean> {
     }
 
     @Override
-    public Boolean parse(Player player, String userInput) {        
+    public Boolean parse(Player player, String userInput) {
         if (userInput.equalsIgnoreCase("true") || userInput.equalsIgnoreCase("yes")
                 || userInput.equalsIgnoreCase("on")
                 || userInput.equalsIgnoreCase("1")) {

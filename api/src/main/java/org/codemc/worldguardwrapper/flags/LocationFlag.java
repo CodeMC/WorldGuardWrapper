@@ -1,18 +1,17 @@
 package org.codemc.worldguardwrapper.flags;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.codemc.worldguardwrapper.implementation.AbstractFlag;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A flag that stores a bukkit location.
  */
-public class LocationFlag extends AbstractFlag<Location> {
+public class LocationFlag extends AbstractWrappedFlag<Location> {
 
     public LocationFlag(String name) {
         this(name, null);
@@ -43,22 +42,22 @@ public class LocationFlag extends AbstractFlag<Location> {
 
             Object worldName = map.get("world");
             if (worldName == null) return null;
-            
+
             Object x = map.get("x");
             if (x == null) return null;
-            
+
             Object y = map.get("y");
             if (y == null) return null;
-            
+
             Object z = map.get("z");
             if (z == null) return null;
-            
+
             Object yaw = map.get("yaw");
             if (yaw == null) return null;
-            
+
             Object pitch = map.get("pitch");
             if (pitch == null) return null;
-            
+
             World world = Bukkit.getWorld(String.valueOf(worldName));
             if (world == null) return null;
 
@@ -97,5 +96,5 @@ public class LocationFlag extends AbstractFlag<Location> {
             return 0;
         }
     }
-    
+
 }

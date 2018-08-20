@@ -1,12 +1,11 @@
 package org.codemc.worldguardwrapper.flags;
 
 import org.bukkit.entity.Player;
-import org.codemc.worldguardwrapper.implementation.AbstractFlag;
 
 /**
  * A flag that stores a string.
  */
-public class StringFlag extends AbstractFlag<String> {
+public class StringFlag extends AbstractWrappedFlag<String> {
 
     public StringFlag(String name) {
         this(name, "");

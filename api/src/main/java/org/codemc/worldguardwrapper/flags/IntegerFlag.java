@@ -1,12 +1,11 @@
 package org.codemc.worldguardwrapper.flags;
 
 import org.bukkit.entity.Player;
-import org.codemc.worldguardwrapper.implementation.AbstractFlag;
 
 /**
  * A flag that stores an integer.
  */
-public class IntegerFlag extends AbstractFlag<Integer> {
+public class IntegerFlag extends AbstractWrappedFlag<Integer> {
 
     public IntegerFlag(String name) {
         this(name, 0);

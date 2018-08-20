@@ -1,17 +1,15 @@
 package org.codemc.worldguardwrapper.event;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.codemc.worldguardwrapper.implementation.AbstractWrappedEvent;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
+@RequiredArgsConstructor
 @Getter
-@AllArgsConstructor
 public class UseEntityEvent extends AbstractWrappedEvent {
 
     private static final HandlerList handlers = new HandlerList();
@@ -29,5 +27,5 @@ public class UseEntityEvent extends AbstractWrappedEvent {
     public static HandlerList getHandlerList() {
         return handlers;
     }
-    
+
 }

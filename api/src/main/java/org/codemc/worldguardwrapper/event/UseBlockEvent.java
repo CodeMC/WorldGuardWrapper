@@ -1,20 +1,18 @@
 package org.codemc.worldguardwrapper.event;
 
-import java.util.List;
-
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.codemc.worldguardwrapper.implementation.AbstractWrappedEvent;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import java.util.List;
 
+@RequiredArgsConstructor
 @Getter
-@AllArgsConstructor
 public class UseBlockEvent extends AbstractWrappedEvent {
 
     private static final HandlerList handlers = new HandlerList();
@@ -33,5 +31,5 @@ public class UseBlockEvent extends AbstractWrappedEvent {
     public static HandlerList getHandlerList() {
         return handlers;
     }
-    
+
 }

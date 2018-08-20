@@ -1,36 +1,32 @@
 package org.codemc.worldguardwrapper.flags;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.bukkit.entity.Player;
-import org.codemc.worldguardwrapper.implementation.AbstractFlag;
+
+import java.util.*;
 
 /**
  * A flag that stores a set of values of the sub flag's type.
  */
-public class SetFlag<T> extends AbstractFlag<Set<T>> {
+public class SetFlag<T> extends AbstractWrappedFlag<Set<T>> {
 
-    private AbstractFlag<T> subFlag;
+    private AbstractWrappedFlag<T> subFlag;
 
-    public SetFlag(String name, AbstractFlag<T> subFlag) {
+    public SetFlag(String name, AbstractWrappedFlag<T> subFlag) {
         this(name, new HashSet<>(), subFlag);
     }
 
     @SuppressWarnings("unchecked")
-    public SetFlag(String name, Set<T> defaultValue, AbstractFlag<T> subFlag) {
+    public SetFlag(String name, Set<T> defaultValue, AbstractWrappedFlag<T> subFlag) {
         super(name, (Class<Set<T>>) defaultValue.getClass(), defaultValue);
+        this.subFlag = subFlag;
     }
 
     /**
      * Get the type of values stored in this flag.
-     * 
+     *
      * @return The stored flag type.
      */
-    public AbstractFlag<T> getSubType() {
+    public AbstractWrappedFlag<T> getSubType() {
         return subFlag;
     }
 
@@ -77,5 +73,5 @@ public class SetFlag<T> extends AbstractFlag<Set<T>> {
             return items;
         }
     }
-    
+
 }

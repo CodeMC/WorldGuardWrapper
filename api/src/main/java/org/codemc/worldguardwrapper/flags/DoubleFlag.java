@@ -1,12 +1,11 @@
 package org.codemc.worldguardwrapper.flags;
 
 import org.bukkit.entity.Player;
-import org.codemc.worldguardwrapper.implementation.AbstractFlag;
 
 /**
  * A flag that stores a double.
  */
-public class DoubleFlag extends AbstractFlag<Double> {
+public class DoubleFlag extends AbstractWrappedFlag<Double> {
 
     public DoubleFlag(String name) {
         this(name, 0d);
