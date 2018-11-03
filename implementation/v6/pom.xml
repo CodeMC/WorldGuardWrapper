@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.codemc.worldguardwrapper</groupId>
         <artifactId>worldguardwrapper-implementation</artifactId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.0.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>worldguardwrapper-implementation-v6</artifactId>
@@ -18,7 +18,7 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>worldguardwrapper-implementation-interface</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>1.0.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.sk89q.worldguard</groupId>

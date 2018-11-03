@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.Event.Result;
 import org.codemc.worldguardwrapper.event.AbstractWrappedEvent;
 
 @NoArgsConstructor
@@ -27,7 +28,12 @@ public class EventListener implements Listener {
                 worldGuardEvent.getBlocks(),
                 worldGuardEvent.getEffectiveMaterial());
         Bukkit.getServer().getPluginManager().callEvent(event);
-        worldGuardEvent.setResult(event.getResult());
+
+        if (event.getResult() != Result.DEFAULT) {
+            // DEFAULT = Result probably has not been touched by the handler,
+            //           so don't touch the original result either.
+            worldGuardEvent.setResult(event.getResult());
+        }
     }
 
     @EventHandler
@@ -44,7 +50,12 @@ public class EventListener implements Listener {
                 worldGuardEvent.getTarget(),
                 worldGuardEvent.getEntity());
         Bukkit.getServer().getPluginManager().callEvent(event);
-        worldGuardEvent.setResult(event.getResult());
+
+        if (event.getResult() != Result.DEFAULT) {
+            // DEFAULT = Result probably has not been touched by the handler,
+            //           so don't touch the original result either.
+            worldGuardEvent.setResult(event.getResult());
+        }
     }
 
     @EventHandler
@@ -61,7 +72,12 @@ public class EventListener implements Listener {
                 worldGuardEvent.getTarget(),
                 worldGuardEvent.getEntity());
         Bukkit.getServer().getPluginManager().callEvent(event);
-        worldGuardEvent.setResult(event.getResult());
+
+        if (event.getResult() != Result.DEFAULT) {
+            // DEFAULT = Result probably has not been touched by the handler,
+            //           so don't touch the original result either.
+            worldGuardEvent.setResult(event.getResult());
+        }
     }
 
 }
