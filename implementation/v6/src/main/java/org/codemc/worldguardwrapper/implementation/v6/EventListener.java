@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.Event.Result;
 import org.codemc.worldguardwrapper.event.AbstractWrappedEvent;
@@ -15,7 +16,7 @@ import org.codemc.worldguardwrapper.event.AbstractWrappedEvent;
 @NoArgsConstructor
 public class EventListener implements Listener {
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOW)
     public void onUseBlock(UseBlockEvent worldGuardEvent) {
         Player player = worldGuardEvent.getCause().getFirstPlayer();
         if (player == null) {
@@ -37,7 +38,7 @@ public class EventListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOW)
     public void onUseEntity(UseEntityEvent worldGuardEvent) {
         Player player = worldGuardEvent.getCause().getFirstPlayer();
         if (player == null) {
@@ -59,7 +60,7 @@ public class EventListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOW)
     public void onDamageEntity(DamageEntityEvent worldGuardEvent) {
         Player player = worldGuardEvent.getCause().getFirstPlayer();
         if (player == null) {
@@ -81,7 +82,7 @@ public class EventListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOW)
     public void onDisallowedPVP(DisallowedPVPEvent worldGuardEvent) {
         AbstractWrappedEvent event = new org.codemc.worldguardwrapper.event.DisallowedPVPEvent(
                 worldGuardEvent.getAttacker(),
