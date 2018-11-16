@@ -215,4 +215,14 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
         }
     }
 
+    @Override
+    public Optional<Set<WrappedRegion>> removeRegion(World world, String id) {
+        Optional<Set<ProtectedRegion>> set = getWorldManager(world).map(manager -> manager.removeRegion(id));
+        if (set.isPresent()) {
+            return Optional.of(set.get().stream().map(region -> toRegion(region)).collect(Collectors.toSet()));
+        } else {
+            return Optional.empty();
+        }
+    }
+
 }

@@ -132,4 +132,13 @@ public interface IWorldGuardImplementation {
         return addRegion(id, Arrays.asList(point1, point2), 0, 0);
     }
 
+    /**
+     * Remove a region, including inheriting children.
+     * 
+     * @param world The world
+     * @param id    The region ID
+     * @return A list of removed regions where the first entry is the region specified by {@code id}
+     */
+    Optional<Set<WrappedRegion>> removeRegion(@NonNull World world, @NonNull String id);
+
 }
