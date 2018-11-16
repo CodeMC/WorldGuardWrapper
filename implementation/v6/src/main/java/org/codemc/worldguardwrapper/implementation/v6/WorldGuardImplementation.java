@@ -1,5 +1,7 @@
 package org.codemc.worldguardwrapper.implementation.v6;
 
+import com.sk89q.worldedit.BlockVector;
+import com.sk89q.worldedit.BlockVector2D;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
@@ -10,6 +12,8 @@ import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
 import com.sk89q.worldguard.protection.managers.RegionManager;
+import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
+import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -22,6 +26,7 @@ import org.codemc.worldguardwrapper.implementation.IWorldGuardImplementation;
 import org.codemc.worldguardwrapper.region.WrappedRegion;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @NoArgsConstructor
 public class WorldGuardImplementation implements IWorldGuardImplementation {
@@ -49,6 +54,14 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
         return getApplicableRegions(location).map(applicableRegions -> applicableRegions.queryState(wrapPlayer(player).orElse(null), stateFlags));
     }
 
+    private BlockVector toBlockVector(Location location) {
+        return new BlockVector(location.getX(), location.getY(), location.getZ());
+    }
+
+    private List<BlockVector2D> toBlockVector2DList(List<Location> locations) {
+        return locations.stream().map(location -> new BlockVector2D(location.getX(), location.getZ())).collect(Collectors.toList());
+    }
+
     private WrappedRegion toRegion(ProtectedRegion region) {
         return new WrappedRegion() {
 
@@ -73,6 +86,11 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
             @Override
             public int getPriority() {
                 return region.getPriority();
+            }
+
+            @Override
+            public boolean contains(Location location) {
+                return region.contains(toBlockVector(location));
             }
 
         };
@@ -177,6 +195,24 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
 
         regionSet.forEach(region -> set.add(toRegion(region)));
         return set;
+    }
+
+    @Override
+    public Optional<WrappedRegion> addRegion(String id, List<Location> points, int minY, int maxY) {
+        ProtectedRegion region;
+        if (points.size() == 2) {
+            region = new ProtectedCuboidRegion(id, toBlockVector(points.get(0)), toBlockVector(points.get(1)));
+        } else {
+            region = new ProtectedPolygonalRegion(id, toBlockVector2DList(points), minY, maxY);
+        }
+
+        Optional<RegionManager> manager = getWorldManager(points.get(0).getWorld());
+        if (manager.isPresent()) {
+            manager.get().addRegion(region);
+            return Optional.of(toRegion(region));
+        } else {
+            return Optional.empty();
+        }
     }
 
 }

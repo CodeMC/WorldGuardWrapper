@@ -8,6 +8,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.codemc.worldguardwrapper.flags.AbstractWrappedFlag;
 import org.codemc.worldguardwrapper.region.WrappedRegion;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -85,7 +87,7 @@ public interface IWorldGuardImplementation {
      * @param id    ID of the region
      * @return The region
      */
-    Optional<WrappedRegion> getRegion(World world, String id);
+    Optional<WrappedRegion> getRegion(@NonNull World world, @NonNull String id);
 
     /**
      * Get an unmodifiable map of regions containing the state of the
@@ -97,7 +99,7 @@ public interface IWorldGuardImplementation {
      * @param world The world
      * @return A map of regions
      */
-    Map<String, WrappedRegion> getRegions(World world);
+    Map<String, WrappedRegion> getRegions(@NonNull World world);
 
     /**
      * Get a set of regions at the given location.
@@ -105,6 +107,29 @@ public interface IWorldGuardImplementation {
      * @param location The location
      * @return A set of regions
      */
-    Set<WrappedRegion> getRegions(Location location);
+    Set<WrappedRegion> getRegions(@NonNull Location location);
+
+    /**
+     * Add a region. If only two points are given, a cuboid region will be created.
+     * 
+     * @param id     The region ID
+     * @param points A {@link List} of points that the region should contain
+     * @param minY   The minimum y coordinate
+     * @param maxY   The maximum y coordinate
+     * @return The added region
+     */
+    Optional<WrappedRegion> addRegion(@NonNull String id, @NonNull List<Location> points, int minY, int maxY);
+
+    /**
+     * Add a cuboid region.
+     * 
+     * @param id     The region ID
+     * @param point1 The first point of the region
+     * @param point2 The second point of the region
+     * @return The added region
+     */
+    default Optional<WrappedRegion> addCuboidRegion(@NonNull String id, @NonNull Location point1, @NonNull Location point2) {
+        return addRegion(id, Arrays.asList(point1, point2), 0, 0);
+    }
 
 }
