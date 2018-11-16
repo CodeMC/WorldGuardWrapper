@@ -27,10 +27,6 @@
 
     <repositories>
         <repository>
-            <id>codemc-repo</id>
-            <url>https://repo.codemc.org/repository/maven-public/</url>
-        </repository>
-        <repository>
             <id>sk89q-repo</id>
             <url>http://maven.sk89q.com/repo/</url>
         </repository>
