@@ -1,10 +1,8 @@
 package org.codemc.worldguardwrapper.implementation.v7;
 
-import com.sk89q.worldedit.BlockVector;
-import com.sk89q.worldedit.BlockVector2D;
-import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
+import com.sk89q.worldedit.math.BlockVector2;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
@@ -44,22 +42,6 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
         plugin = WorldGuardPlugin.inst();
     }
 
-    // Adapters
-
-    private static Vector toVector(Location location) {
-        return new Vector(location.getX(), location.getY(), location.getZ());
-    }
-
-    private static BlockVector toBlockVector(Location location) {
-        return new BlockVector(location.getX(), location.getY(), location.getZ());
-    }
-
-    private static List<BlockVector2D> toBlockVector2DList(List<Location> locations) {
-        return locations.stream()
-                .map(location -> new BlockVector2D(location.getX(), location.getZ()))
-                .collect(Collectors.toList());
-    }
-
     private Optional<LocalPlayer> wrapPlayer(Player player) {
         return Optional.ofNullable(player).map(bukkitPlayer -> plugin.wrapPlayer(player));
     }
@@ -73,7 +55,7 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     }
 
     private Optional<ApplicableRegionSet> getApplicableRegions(@NonNull Location location) {
-        return getWorldManager(location.getWorld()).map(manager -> manager.getApplicableRegions(toVector(location)));
+        return getWorldManager(location.getWorld()).map(manager -> manager.getApplicableRegions(BukkitAdapter.asBlockVector(location)));
     }
 
     private <V> Optional<V> queryValue(Player player, @NonNull Location location, @NonNull Flag<V> flag) {
@@ -112,7 +94,7 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
 
             @Override
             public boolean contains(Location location) {
-                return region.contains(toVector(location));
+                return region.contains(BukkitAdapter.asBlockVector(location));
             }
 
         };
@@ -226,9 +208,13 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     public Optional<WrappedRegion> addRegion(String id, List<Location> points, int minY, int maxY) {
         ProtectedRegion region;
         if (points.size() == 2) {
-            region = new ProtectedCuboidRegion(id, toBlockVector(points.get(0)), toBlockVector(points.get(1)));
+            region = new ProtectedCuboidRegion(id, BukkitAdapter.asBlockVector(points.get(0)), BukkitAdapter.asBlockVector(points.get(1)));
         } else {
-            region = new ProtectedPolygonalRegion(id, toBlockVector2DList(points), minY, maxY);
+            List<BlockVector2> vectorPoints = points.stream()
+                    .map(location -> BukkitAdapter.asBlockVector(location).toBlockVector2())
+                    .collect(Collectors.toList());
+                    
+            region = new ProtectedPolygonalRegion(id, vectorPoints, minY, maxY);
         }
 
         Optional<RegionManager> manager = getWorldManager(points.get(0).getWorld());
