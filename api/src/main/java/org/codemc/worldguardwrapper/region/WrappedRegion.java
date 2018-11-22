@@ -1,11 +1,16 @@
 package org.codemc.worldguardwrapper.region;
 
-import java.util.Map;
-import java.util.Optional;
-
 import org.bukkit.Location;
 
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
 public interface WrappedRegion {
+
+    Location getMinimumPoint();
+
+    Location getMaximumPoint();
 
     String getId();
 

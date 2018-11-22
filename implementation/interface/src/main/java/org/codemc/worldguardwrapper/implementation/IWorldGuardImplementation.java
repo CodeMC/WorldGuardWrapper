@@ -8,11 +8,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.codemc.worldguardwrapper.flags.AbstractWrappedFlag;
 import org.codemc.worldguardwrapper.region.WrappedRegion;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public interface IWorldGuardImplementation {
 
@@ -109,9 +105,19 @@ public interface IWorldGuardImplementation {
      */
     Set<WrappedRegion> getRegions(@NonNull Location location);
 
+
+    /**
+     * Get a set of regions in the given cuboid area.
+     *
+     * @param minimum The minimum location of the area
+     * @param maximum The maximum location of the area
+     * @return A set of regions
+     */
+    Set<WrappedRegion> getRegions(@NonNull Location minimum, @NonNull Location maximum);
+
     /**
      * Add a region. If only two points are given, a cuboid region will be created.
-     * 
+     *
      * @param id     The region ID
      * @param points A {@link List} of points that the region should contain
      * @param minY   The minimum y coordinate
@@ -122,7 +128,7 @@ public interface IWorldGuardImplementation {
 
     /**
      * Add a cuboid region.
-     * 
+     *
      * @param id     The region ID
      * @param point1 The first point of the region
      * @param point2 The second point of the region
@@ -134,7 +140,7 @@ public interface IWorldGuardImplementation {
 
     /**
      * Remove a region, including inheriting children.
-     * 
+     *
      * @param world The world
      * @param id    The region ID
      * @return A list of removed regions where the first entry is the region specified by {@code id}

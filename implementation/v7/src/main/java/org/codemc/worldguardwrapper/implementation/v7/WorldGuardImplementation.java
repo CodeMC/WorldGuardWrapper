@@ -25,6 +25,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.codemc.worldguardwrapper.flags.AbstractWrappedFlag;
 import org.codemc.worldguardwrapper.implementation.IWorldGuardImplementation;
+import org.codemc.worldguardwrapper.region.WrappedPolygonalRegion;
 import org.codemc.worldguardwrapper.region.WrappedRegion;
 
 import java.util.*;
@@ -58,46 +59,113 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
         return getWorldManager(location.getWorld()).map(manager -> manager.getApplicableRegions(BukkitAdapter.asBlockVector(location)));
     }
 
+    private Optional<ApplicableRegionSet> getApplicableRegions(@NonNull Location minimum, @NonNull Location maximum) {
+        return getWorldManager(minimum.getWorld()).map(manager -> manager.getApplicableRegions(
+                new ProtectedCuboidRegion("temp", BukkitAdapter.asBlockVector(minimum), BukkitAdapter.asBlockVector(maximum))));
+    }
+
     private <V> Optional<V> queryValue(Player player, @NonNull Location location, @NonNull Flag<V> flag) {
-        return getApplicableRegions(location).map(applicableRegions -> applicableRegions.queryValue(wrapPlayer(player).orElse(null), flag));
+        return getApplicableRegions(location).map(applicableRegions -> applicableRegions.queryValue(wrapPlayer(player)
+                .orElse(null), flag));
     }
 
     private Optional<StateFlag.State> queryState(Player player, @NonNull Location location, @NonNull StateFlag... stateFlags) {
-        return getApplicableRegions(location).map(applicableRegions -> applicableRegions.queryState(wrapPlayer(player).orElse(null), stateFlags));
+        return getApplicableRegions(location).map(applicableRegions -> applicableRegions.queryState(wrapPlayer(player)
+                .orElse(null), stateFlags));
     }
 
-    private WrappedRegion toRegion(ProtectedRegion region) {
-        return new WrappedRegion() {
+    private WrappedRegion toRegion(World world, ProtectedRegion region) {
+        if (region instanceof ProtectedPolygonalRegion) {
+            return new WrappedPolygonalRegion() {
 
-            @Override
-            public String getId() {
-                return region.getId();
-            }
+                @Override
+                public Location getMinimumPoint() {
+                    return BukkitAdapter.adapt(world, region.getMinimumPoint());
+                }
 
-            @Override
-            public Map<String, Object> getFlags() {
-                Map<String, Object> map = new HashMap<>();
-                region.getFlags().forEach((flag, value) -> map.put(flag.getName(), value));
-                return map;
-            }
+                @Override
+                public Location getMaximumPoint() {
+                    return BukkitAdapter.adapt(world, region.getMaximumPoint());
+                }
 
-            @Override
-            public Optional<Object> getFlag(String name) {
-                return Optional.ofNullable(flagRegistry.get(name))
-                        .map(region::getFlag);
-            }
+                @Override
+                public Set<Location> getPoints() {
+                    return region.getPoints().stream()
+                            .map(BlockVector2::toBlockVector3)
+                            .map(vector -> BukkitAdapter.adapt(world, vector))
+                            .collect(Collectors.toSet());
+                }
 
-            @Override
-            public int getPriority() {
-                return region.getPriority();
-            }
+                @Override
+                public String getId() {
+                    return region.getId();
+                }
 
-            @Override
-            public boolean contains(Location location) {
-                return region.contains(BukkitAdapter.asBlockVector(location));
-            }
+                @Override
+                public Map<String, Object> getFlags() {
+                    Map<String, Object> map = new HashMap<>();
+                    region.getFlags().forEach((flag, value) -> map.put(flag.getName(), value));
+                    return map;
+                }
 
-        };
+                @Override
+                public Optional<Object> getFlag(String name) {
+                    return Optional.ofNullable(flagRegistry.get(name))
+                            .map(region::getFlag);
+                }
+
+                @Override
+                public int getPriority() {
+                    return region.getPriority();
+                }
+
+                @Override
+                public boolean contains(Location location) {
+                    return region.contains(BukkitAdapter.asBlockVector(location));
+                }
+            };
+        } else {
+            return new WrappedRegion() {
+
+                @Override
+                public Location getMinimumPoint() {
+                    return BukkitAdapter.adapt(world, region.getMinimumPoint());
+                }
+
+                @Override
+                public Location getMaximumPoint() {
+                    return BukkitAdapter.adapt(world, region.getMaximumPoint());
+                }
+
+                @Override
+                public String getId() {
+                    return region.getId();
+                }
+
+                @Override
+                public Map<String, Object> getFlags() {
+                    Map<String, Object> map = new HashMap<>();
+                    region.getFlags().forEach((flag, value) -> map.put(flag.getName(), value));
+                    return map;
+                }
+
+                @Override
+                public Optional<Object> getFlag(String name) {
+                    return Optional.ofNullable(flagRegistry.get(name))
+                            .map(region::getFlag);
+                }
+
+                @Override
+                public int getPriority() {
+                    return region.getPriority();
+                }
+
+                @Override
+                public boolean contains(Location location) {
+                    return region.contains(BukkitAdapter.asBlockVector(location));
+                }
+            };
+        }
     }
 
     @Override
@@ -176,7 +244,7 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     public Optional<WrappedRegion> getRegion(World world, String id) {
         return getWorldManager(world)
                 .map(regionManager -> regionManager.getRegion(id))
-                .map(this::toRegion);
+                .map(region -> toRegion(world, region));
     }
 
     @Override
@@ -188,7 +256,7 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
 
         Map<String, ProtectedRegion> regions = regionManager.getRegions();
         Map<String, WrappedRegion> map = new HashMap<>();
-        regions.forEach((name, region) -> map.put(name, toRegion(region)));
+        regions.forEach((name, region) -> map.put(name, toRegion(world, region)));
         return map;
     }
 
@@ -200,27 +268,41 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
         }
 
         return regionSet.getRegions().stream()
-                .map(this::toRegion)
+                .map(region -> toRegion(location.getWorld(), region))
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<WrappedRegion> getRegions(Location minimum, Location maximum) {
+        ApplicableRegionSet regionSet = getApplicableRegions(minimum, maximum).orElse(null);
+        if (regionSet == null) {
+            return Collections.emptySet();
+        }
+
+        return regionSet.getRegions().stream()
+                .map(region -> toRegion(minimum.getWorld(), region))
                 .collect(Collectors.toSet());
     }
 
     @Override
     public Optional<WrappedRegion> addRegion(String id, List<Location> points, int minY, int maxY) {
         ProtectedRegion region;
+        World world = points.get(0).getWorld();
         if (points.size() == 2) {
-            region = new ProtectedCuboidRegion(id, BukkitAdapter.asBlockVector(points.get(0)), BukkitAdapter.asBlockVector(points.get(1)));
+            region = new ProtectedCuboidRegion(id, BukkitAdapter.asBlockVector(points.get(0)),
+                    BukkitAdapter.asBlockVector(points.get(1)));
         } else {
             List<BlockVector2> vectorPoints = points.stream()
                     .map(location -> BukkitAdapter.asBlockVector(location).toBlockVector2())
                     .collect(Collectors.toList());
-                    
+
             region = new ProtectedPolygonalRegion(id, vectorPoints, minY, maxY);
         }
 
-        Optional<RegionManager> manager = getWorldManager(points.get(0).getWorld());
+        Optional<RegionManager> manager = getWorldManager(world);
         if (manager.isPresent()) {
             manager.get().addRegion(region);
-            return Optional.of(toRegion(region));
+            return Optional.of(toRegion(world, region));
         } else {
             return Optional.empty();
         }
@@ -229,6 +311,7 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     @Override
     public Optional<Set<WrappedRegion>> removeRegion(World world, String id) {
         Optional<Set<ProtectedRegion>> set = getWorldManager(world).map(manager -> manager.removeRegion(id));
-        return set.map(protectedRegions -> protectedRegions.stream().map(this::toRegion).collect(Collectors.toSet()));
+        return set.map(protectedRegions -> protectedRegions.stream()
+                .map(region -> toRegion(world, region)).collect(Collectors.toSet()));
     }
 }
