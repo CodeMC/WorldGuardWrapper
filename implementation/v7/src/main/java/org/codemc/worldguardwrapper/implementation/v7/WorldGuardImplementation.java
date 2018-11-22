@@ -25,6 +25,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.codemc.worldguardwrapper.flags.AbstractWrappedFlag;
 import org.codemc.worldguardwrapper.implementation.IWorldGuardImplementation;
+import org.codemc.worldguardwrapper.region.PlayerDomain;
 import org.codemc.worldguardwrapper.region.WrappedRegion;
 import org.codemc.worldguardwrapper.selection.CuboidSelection;
 import org.codemc.worldguardwrapper.selection.PolygonalSelection;
@@ -141,13 +142,73 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
             }
 
             @Override
-            public Set<UUID> getOwners() {
-                return region.getOwners().getUniqueIds();
+            public PlayerDomain getOwners() {
+                return new PlayerDomain() {
+                    @Override
+                    public Set<UUID> getPlayers() {
+                        return region.getOwners().getUniqueIds();
+                    }
+
+                    @Override
+                    public void addPlayer(UUID uuid) {
+                        region.getOwners().addPlayer(uuid);
+                    }
+
+                    @Override
+                    public void removePlayer(UUID uuid) {
+                        region.getOwners().removePlayer(uuid);
+                    }
+
+                    @Override
+                    public Set<String> getGroups() {
+                        return region.getOwners().getGroups();
+                    }
+
+                    @Override
+                    public void addGroup(String name) {
+                        region.getOwners().addGroup(name);
+                    }
+
+                    @Override
+                    public void removeGroup(String name) {
+                        region.getOwners().removeGroup(name);
+                    }
+                };
             }
 
             @Override
-            public Set<UUID> getMembers() {
-                return region.getMembers().getUniqueIds();
+            public PlayerDomain getMembers() {
+                return new PlayerDomain() {
+                    @Override
+                    public Set<UUID> getPlayers() {
+                        return region.getMembers().getUniqueIds();
+                    }
+
+                    @Override
+                    public void addPlayer(UUID uuid) {
+                        region.getMembers().addPlayer(uuid);
+                    }
+
+                    @Override
+                    public void removePlayer(UUID uuid) {
+                        region.getMembers().removePlayer(uuid);
+                    }
+
+                    @Override
+                    public Set<String> getGroups() {
+                        return region.getMembers().getGroups();
+                    }
+
+                    @Override
+                    public void addGroup(String name) {
+                        region.getMembers().addGroup(name);
+                    }
+
+                    @Override
+                    public void removeGroup(String name) {
+                        region.getMembers().removeGroup(name);
+                    }
+                };
             }
 
             @Override
