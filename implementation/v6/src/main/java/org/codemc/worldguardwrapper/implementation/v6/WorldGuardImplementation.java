@@ -23,7 +23,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.codemc.worldguardwrapper.flags.AbstractWrappedFlag;
 import org.codemc.worldguardwrapper.implementation.IWorldGuardImplementation;
-import org.codemc.worldguardwrapper.region.WrappedPolygonalRegion;
+import org.codemc.worldguardwrapper.selection.CuboidSelection;
+import org.codemc.worldguardwrapper.selection.PolygonalSelection;
+import org.codemc.worldguardwrapper.selection.Selection;
 import org.codemc.worldguardwrapper.region.WrappedRegion;
 
 import java.util.*;
@@ -75,97 +77,84 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     }
 
     private WrappedRegion toRegion(World world, ProtectedRegion region) {
-        if (region instanceof ProtectedPolygonalRegion) {
-            return new WrappedPolygonalRegion() {
+        return new WrappedRegion() {
 
-                @Override
-                public Location getMinimumPoint() {
-                    return fromBlockVector(world, region.getMinimumPoint());
-                }
+            @Override
+            public Selection getSelection() {
+                if (region instanceof PolygonalSelection) {
+                    return new PolygonalSelection() {
 
-                @Override
-                public Location getMaximumPoint() {
-                    return fromBlockVector(world, region.getMaximumPoint());
-                }
+                        @Override
+                        public Set<Location> getPoints() {
+                            return region.getPoints().stream()
+                                    .map(vector -> new BlockVector(vector.toVector()))
+                                    .map(vector -> fromBlockVector(world, vector))
+                                    .collect(Collectors.toSet());
+                        }
 
-                @Override
-                public Set<Location> getPoints() {
-                    return region.getPoints().stream()
-                            .map(vector -> new BlockVector(vector.toVector()))
-                            .map(vector -> fromBlockVector(world, vector))
-                            .collect(Collectors.toSet());
-                }
+                        @Override
+                        public int getMinimumY() {
+                            return ((PolygonalSelection) region).getMinimumY();
+                        }
 
-                @Override
-                public String getId() {
-                    return region.getId();
+                        @Override
+                        public int getMaximumY() {
+                            return ((PolygonalSelection) region).getMaximumY();
+                        }
+                    };
                 }
+                return new CuboidSelection() {
 
-                @Override
-                public Map<String, Object> getFlags() {
-                    Map<String, Object> map = new HashMap<>();
-                    region.getFlags().forEach((flag, value) -> map.put(flag.getName(), value));
-                    return map;
-                }
+                    @Override
+                    public Location getMinimumPoint() {
+                        return fromBlockVector(world, region.getMinimumPoint());
+                    }
 
-                @Override
-                public Optional<Object> getFlag(String name) {
-                    return Optional.ofNullable(flagRegistry.get(name))
-                            .map(region::getFlag);
-                }
+                    @Override
+                    public Location getMaximumPoint() {
+                        return fromBlockVector(world, region.getMaximumPoint());
+                    }
+                };
+            }
 
-                @Override
-                public int getPriority() {
-                    return region.getPriority();
-                }
+            @Override
+            public String getId() {
+                return region.getId();
+            }
 
-                @Override
-                public boolean contains(Location location) {
-                    return region.contains(toBlockVector(location));
-                }
-            };
-        } else {
-            return new WrappedRegion() {
+            @Override
+            public Map<String, Object> getFlags() {
+                Map<String, Object> map = new HashMap<>();
+                region.getFlags().forEach((flag, value) -> map.put(flag.getName(), value));
+                return map;
+            }
 
-                @Override
-                public Location getMinimumPoint() {
-                    return fromBlockVector(world, region.getMinimumPoint());
-                }
+            @Override
+            public Optional<Object> getFlag(String name) {
+                return Optional.ofNullable(flagRegistry.get(name))
+                        .map(region::getFlag);
+            }
 
-                @Override
-                public Location getMaximumPoint() {
-                    return fromBlockVector(world, region.getMaximumPoint());
-                }
+            @Override
+            public int getPriority() {
+                return region.getPriority();
+            }
 
-                @Override
-                public String getId() {
-                    return region.getId();
-                }
+            @Override
+            public Set<UUID> getOwners() {
+                return region.getOwners().getUniqueIds();
+            }
 
-                @Override
-                public Map<String, Object> getFlags() {
-                    Map<String, Object> map = new HashMap<>();
-                    region.getFlags().forEach((flag, value) -> map.put(flag.getName(), value));
-                    return map;
-                }
+            @Override
+            public Set<UUID> getMembers() {
+                return region.getMembers().getUniqueIds();
+            }
 
-                @Override
-                public Optional<Object> getFlag(String name) {
-                    return Optional.ofNullable(flagRegistry.get(name))
-                            .map(region::getFlag);
-                }
-
-                @Override
-                public int getPriority() {
-                    return region.getPriority();
-                }
-
-                @Override
-                public boolean contains(Location location) {
-                    return region.contains(toBlockVector(location));
-                }
-            };
-        }
+            @Override
+            public boolean contains(Location location) {
+                return region.contains(toBlockVector(location));
+            }
+        };
     }
 
     @Override
