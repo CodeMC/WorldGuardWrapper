@@ -5,8 +5,6 @@ import org.codemc.worldguardwrapper.selection.Selection;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
 
 public interface WrappedRegion {
 
@@ -20,9 +18,9 @@ public interface WrappedRegion {
 
     int getPriority();
 
-    Set<UUID> getOwners();
+    PlayerDomain getOwners();
 
-    Set<UUID> getMembers();
+    PlayerDomain getMembers();
 
     boolean contains(Location location);
 
