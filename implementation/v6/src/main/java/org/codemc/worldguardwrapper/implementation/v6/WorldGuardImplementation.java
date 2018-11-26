@@ -5,9 +5,8 @@ import com.sk89q.worldedit.BlockVector2D;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.flags.BooleanFlag;
 import com.sk89q.worldguard.protection.flags.Flag;
-import com.sk89q.worldguard.protection.flags.FlagContext;
-import com.sk89q.worldguard.protection.flags.InvalidFlagFormat;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
@@ -15,15 +14,17 @@ import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.codemc.worldguardwrapper.flags.AbstractWrappedFlag;
+import org.codemc.worldguardwrapper.flag.AbstractWrappedFlag;
+import org.codemc.worldguardwrapper.flag.WrappedBooleanFlag;
 import org.codemc.worldguardwrapper.implementation.IWorldGuardImplementation;
-import org.codemc.worldguardwrapper.region.PlayerDomain;
+import org.codemc.worldguardwrapper.implementation.wrapper.WrapperAdapter;
+import org.codemc.worldguardwrapper.implementation.wrapper.WrapperAdapterRegister;
+import org.codemc.worldguardwrapper.region.WrappedDomain;
 import org.codemc.worldguardwrapper.region.WrappedRegion;
 import org.codemc.worldguardwrapper.selection.CuboidSelection;
 import org.codemc.worldguardwrapper.selection.PolygonalSelection;
@@ -32,11 +33,19 @@ import org.codemc.worldguardwrapper.selection.Selection;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@NoArgsConstructor
 public class WorldGuardImplementation implements IWorldGuardImplementation {
 
     private final WorldGuardPlugin plugin = WorldGuardPlugin.inst();
     private final FlagRegistry flagRegistry = plugin.getFlagRegistry();
+
+    private final WrapperAdapterRegister<AbstractWrappedFlag<?>, Flag<?>> flagAdapter = new WrapperAdapterRegister<>();
+
+    @SuppressWarnings("unchecked")
+    public WorldGuardImplementation() {
+        // Register the flag adapters
+        flagAdapter.register(new WrapperAdapter<>(WrappedBooleanFlag.class, BooleanFlag.class,
+                flag -> new WrappedBooleanFlag(flag.getName()), flag -> new BooleanFlag(flag.getName())));
+    }
 
     private Optional<LocalPlayer> wrapPlayer(Player player) {
         return Optional.ofNullable(player).map(bukkitPlayer -> plugin.wrapPlayer(player));
@@ -131,6 +140,14 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
             }
 
             @Override
+            public Map<AbstractWrappedFlag<?>, Object> getWrappedFlags() {
+                Map<AbstractWrappedFlag<?>, Object> map = new HashMap<>();
+                region.getFlags().forEach((flag, value) ->
+                        flagAdapter.wrap(flag).ifPresent(wrapped -> map.put(wrapped, value)));
+                return map;
+            }
+
+            @Override
             public Optional<Object> getFlag(String name) {
                 return Optional.ofNullable(flagRegistry.get(name))
                         .map(region::getFlag);
@@ -142,8 +159,8 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
             }
 
             @Override
-            public PlayerDomain getOwners() {
-                return new PlayerDomain() {
+            public WrappedDomain getOwners() {
+                return new WrappedDomain() {
                     @Override
                     public Set<UUID> getPlayers() {
                         return region.getOwners().getUniqueIds();
@@ -177,8 +194,8 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
             }
 
             @Override
-            public PlayerDomain getMembers() {
-                return new PlayerDomain() {
+            public WrappedDomain getMembers() {
+                return new WrappedDomain() {
                     @Override
                     public Set<UUID> getPlayers() {
                         return region.getMembers().getUniqueIds();
@@ -229,25 +246,6 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     }
 
     @Override
-    public Optional<Boolean> queryStateFlag(Player player, @NonNull Location location, @NonNull String flagId) {
-        Flag<?> flag = flagRegistry.get(flagId);
-        if (!(flag instanceof StateFlag)) {
-            return Optional.empty();
-        }
-        return queryState(player, location, (StateFlag) flag).map(state -> state == StateFlag.State.ALLOW);
-    }
-
-    @Override
-    public boolean registerStateFlag(@NonNull String flagId, @NonNull Boolean defaultValue) {
-        try {
-            flagRegistry.register(new StateFlag(flagId, defaultValue));
-            return true;
-        } catch (FlagConflictException ignored) {
-        }
-        return false;
-    }
-
-    @Override
     @SuppressWarnings("unchecked")
     public <T> Optional<T> queryFlag(Player player, Location location, String flagName, Class<T> type) {
         Flag<?> flag = flagRegistry.get(flagName);
@@ -259,33 +257,14 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     }
 
     @Override
-    public <T> boolean registerFlag(AbstractWrappedFlag<T> flag) {
-        Flag<T> wgFlag = new Flag<T>(flag.getName()) {
-            @Override
-            public T getDefault() {
-                return flag.getDefaultValue();
+    public boolean registerFlag(AbstractWrappedFlag<?> flag) {
+        Optional<Flag<?>> unwrapped = flagAdapter.unwrap(flag);
+        if (unwrapped.isPresent()) {
+            try {
+                flagRegistry.register(unwrapped.get());
+                return true;
+            } catch (FlagConflictException ignored) {
             }
-
-            @Override
-            public Object marshal(T o) {
-                return flag.serialize(o);
-            }
-
-            @Override
-            public T unmarshal(Object o) {
-                return flag.deserialize(o);
-            }
-
-            @Override
-            public T parseInput(FlagContext context) throws InvalidFlagFormat {
-                return flag.parse(context.getPlayerSender(), context.getUserInput());
-            }
-        };
-
-        try {
-            flagRegistry.register(wgFlag);
-            return true;
-        } catch (FlagConflictException ignored) {
         }
         return false;
     }

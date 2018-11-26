@@ -11,7 +11,7 @@ import org.bukkit.event.Event.Result;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.codemc.worldguardwrapper.event.AbstractWrappedEvent;
+import org.codemc.worldguardwrapper.event.*;
 
 @NoArgsConstructor
 public class EventListener implements Listener {
@@ -24,7 +24,7 @@ public class EventListener implements Listener {
             return;
         }
 
-        AbstractWrappedEvent event = new org.codemc.worldguardwrapper.event.UseBlockEvent(
+        AbstractWrappedEvent event = new WrappedUseBlockEvent(
                 worldGuardEvent.getOriginalEvent(),
                 player, worldGuardEvent.getWorld(),
                 worldGuardEvent.getBlocks(),
@@ -46,7 +46,7 @@ public class EventListener implements Listener {
             return;
         }
 
-        AbstractWrappedEvent event = new org.codemc.worldguardwrapper.event.UseEntityEvent(
+        AbstractWrappedEvent event = new WrappedUseEntityEvent(
                 worldGuardEvent.getOriginalEvent(),
                 player,
                 worldGuardEvent.getTarget(),
@@ -68,7 +68,7 @@ public class EventListener implements Listener {
             return;
         }
 
-        AbstractWrappedEvent event = new org.codemc.worldguardwrapper.event.DamageEntityEvent(
+        AbstractWrappedEvent event = new WrappedDamageEntityEvent(
                 worldGuardEvent.getOriginalEvent(),
                 player,
                 worldGuardEvent.getTarget(),
@@ -84,7 +84,7 @@ public class EventListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onDisallowedPVP(DisallowedPVPEvent worldGuardEvent) {
-        AbstractWrappedEvent event = new org.codemc.worldguardwrapper.event.DisallowedPVPEvent(
+        AbstractWrappedEvent event = new WrappedDisallowedPVPEvent(
                 worldGuardEvent.getAttacker(),
                 worldGuardEvent.getDefender(),
                 worldGuardEvent.getCause());

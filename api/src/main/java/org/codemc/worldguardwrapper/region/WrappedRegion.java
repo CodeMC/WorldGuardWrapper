@@ -1,6 +1,7 @@
 package org.codemc.worldguardwrapper.region;
 
 import org.bukkit.Location;
+import org.codemc.worldguardwrapper.flag.AbstractWrappedFlag;
 import org.codemc.worldguardwrapper.selection.Selection;
 
 import java.util.Map;
@@ -16,11 +17,13 @@ public interface WrappedRegion {
 
     Map<String, Object> getFlags();
 
+    Map<AbstractWrappedFlag<?>, Object> getWrappedFlags();
+
     int getPriority();
 
-    PlayerDomain getOwners();
+    WrappedDomain getOwners();
 
-    PlayerDomain getMembers();
+    WrappedDomain getMembers();
 
     boolean contains(Location location);
 

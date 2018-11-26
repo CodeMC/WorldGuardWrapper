@@ -10,7 +10,7 @@ import org.bukkit.event.HandlerList;
 
 @RequiredArgsConstructor
 @Getter
-public class DamageEntityEvent extends AbstractWrappedEvent {
+public class WrappedDamageEntityEvent extends AbstractWrappedEvent {
 
     private static final HandlerList handlers = new HandlerList();
 

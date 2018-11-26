@@ -23,9 +23,9 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.codemc.worldguardwrapper.flags.AbstractWrappedFlag;
+import org.codemc.worldguardwrapper.flag.AbstractWrappedFlag;
 import org.codemc.worldguardwrapper.implementation.IWorldGuardImplementation;
-import org.codemc.worldguardwrapper.region.PlayerDomain;
+import org.codemc.worldguardwrapper.region.WrappedDomain;
 import org.codemc.worldguardwrapper.region.WrappedRegion;
 import org.codemc.worldguardwrapper.selection.CuboidSelection;
 import org.codemc.worldguardwrapper.selection.PolygonalSelection;
@@ -142,8 +142,8 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
             }
 
             @Override
-            public PlayerDomain getOwners() {
-                return new PlayerDomain() {
+            public WrappedDomain getOwners() {
+                return new WrappedDomain() {
                     @Override
                     public Set<UUID> getPlayers() {
                         return region.getOwners().getUniqueIds();
@@ -177,8 +177,8 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
             }
 
             @Override
-            public PlayerDomain getMembers() {
-                return new PlayerDomain() {
+            public WrappedDomain getMembers() {
+                return new WrappedDomain() {
                     @Override
                     public Set<UUID> getPlayers() {
                         return region.getMembers().getUniqueIds();

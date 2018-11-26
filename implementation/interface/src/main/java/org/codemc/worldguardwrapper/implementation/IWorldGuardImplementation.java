@@ -5,7 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.codemc.worldguardwrapper.flags.AbstractWrappedFlag;
+import org.codemc.worldguardwrapper.flag.AbstractWrappedFlag;
 import org.codemc.worldguardwrapper.region.WrappedRegion;
 
 import java.util.*;
@@ -25,25 +25,6 @@ public interface IWorldGuardImplementation {
      * @return The API version
      */
     int getApiVersion();
-
-    /**
-     * Query a StateFlag's value for a given player at a given location.
-     *
-     * @param player   The player
-     * @param location The location
-     * @param flagName The flag's name
-     * @return The flag's value
-     */
-    Optional<Boolean> queryStateFlag(Player player, @NonNull Location location, @NonNull String flagName);
-
-    /**
-     * Register a {@code StateFlag}.
-     *
-     * @param flagName     The name of the flag
-     * @param defaultValue The flag's default value
-     * @return Whether the flag has been registered
-     */
-    boolean registerStateFlag(@NonNull String flagName, @NonNull Boolean defaultValue);
 
     /**
      * Query a flag's value for a given player at a given location.
@@ -74,7 +55,7 @@ public interface IWorldGuardImplementation {
      * @param flag The flag to register
      * @return Whether the flag has been registered
      */
-    <T> boolean registerFlag(@NonNull AbstractWrappedFlag<T> flag);
+    boolean registerFlag(@NonNull AbstractWrappedFlag<?> flag);
 
     /**
      * Get a region by its ID.

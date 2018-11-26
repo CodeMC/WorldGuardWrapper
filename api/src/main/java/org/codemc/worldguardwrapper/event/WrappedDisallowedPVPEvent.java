@@ -8,7 +8,7 @@ import org.bukkit.event.HandlerList;
 
 @RequiredArgsConstructor
 @Getter
-public class DisallowedPVPEvent extends AbstractWrappedEvent {
+public class WrappedDisallowedPVPEvent extends AbstractWrappedEvent {
 
     private static final HandlerList handlers = new HandlerList();
 
