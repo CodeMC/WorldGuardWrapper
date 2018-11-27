@@ -1,9 +1,8 @@
 package org.codemc.worldguardwrapper.implementation.v7;
 
-import com.sk89q.worldedit.BlockVector;
-import com.sk89q.worldedit.BlockVector2D;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
+import com.sk89q.worldedit.math.BlockVector2;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
@@ -15,8 +14,8 @@ import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -32,24 +31,15 @@ import org.codemc.worldguardwrapper.region.IWrappedRegion;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@NoArgsConstructor
 public class WorldGuardImplementation implements IWorldGuardImplementation {
 
-    private final WorldGuard core;
-    private final FlagRegistry flagRegistry;
-    private final WorldGuardPlugin plugin;
-
-    public WorldGuardImplementation() {
-        core = WorldGuard.getInstance();
-        flagRegistry = core.getFlagRegistry();
-        plugin = WorldGuardPlugin.inst();
-    }
+    private final WorldGuard core = WorldGuard.getInstance();
+    private final FlagRegistry flagRegistry = core.getFlagRegistry();
+    private final WorldGuardPlugin plugin = WorldGuardPlugin.inst();
 
     private Optional<LocalPlayer> wrapPlayer(Player player) {
         return Optional.ofNullable(player).map(bukkitPlayer -> plugin.wrapPlayer(player));
-    }
-
-    private Optional<Player> getPlayer(LocalPlayer player) {
-        return Optional.ofNullable(Bukkit.getPlayer(player.getUniqueId()));
     }
 
     private Optional<RegionManager> getWorldManager(@NonNull World world) {
@@ -57,22 +47,17 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     }
 
     private Optional<ApplicableRegionSet> getApplicableRegions(@NonNull Location location) {
-        return getWorldManager(location.getWorld()).map(manager -> manager.getApplicableRegions(BukkitAdapter.asVector(location)));
+        return getWorldManager(location.getWorld()).map(manager -> manager.getApplicableRegions(BukkitAdapter.asBlockVector(location)));
     }
 
     private Optional<ApplicableRegionSet> getApplicableRegions(@NonNull Location minimum, @NonNull Location maximum) {
         return getWorldManager(minimum.getWorld()).map(manager -> manager.getApplicableRegions(
-                new ProtectedCuboidRegion("temp", new BlockVector(BukkitAdapter.asVector(minimum)), new BlockVector(BukkitAdapter.asVector(maximum)))));
+                new ProtectedCuboidRegion("temp", BukkitAdapter.asBlockVector(minimum), BukkitAdapter.asBlockVector(maximum))));
     }
 
     private <V> Optional<V> queryValue(Player player, @NonNull Location location, @NonNull Flag<V> flag) {
         return getApplicableRegions(location).map(applicableRegions -> applicableRegions.queryValue(wrapPlayer(player)
                 .orElse(null), flag));
-    }
-
-    private Optional<StateFlag.State> queryState(Player player, @NonNull Location location, @NonNull StateFlag... stateFlags) {
-        return getApplicableRegions(location).map(applicableRegions -> applicableRegions.queryState(wrapPlayer(player)
-                .orElse(null), stateFlags));
     }
 
     @Override
@@ -177,11 +162,11 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
         ProtectedRegion region;
         World world = points.get(0).getWorld();
         if (points.size() == 2) {
-            region = new ProtectedCuboidRegion(id, new BlockVector(BukkitAdapter.asVector(points.get(0))),
-                    new BlockVector(BukkitAdapter.asVector(points.get(1))));
+            region = new ProtectedCuboidRegion(id, BukkitAdapter.asBlockVector(points.get(0)),
+                    BukkitAdapter.asBlockVector(points.get(1)));
         } else {
-            List<BlockVector2D> vectorPoints = points.stream()
-                    .map(location -> new BlockVector2D(BukkitAdapter.asVector(location).toVector2D()))
+            List<BlockVector2> vectorPoints = points.stream()
+                    .map(location -> BukkitAdapter.asBlockVector(location).toBlockVector2())
                     .collect(Collectors.toList());
 
             region = new ProtectedPolygonalRegion(id, vectorPoints, minY, maxY);

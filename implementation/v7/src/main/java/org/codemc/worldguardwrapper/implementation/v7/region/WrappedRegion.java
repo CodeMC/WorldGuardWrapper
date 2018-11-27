@@ -1,7 +1,7 @@
 package org.codemc.worldguardwrapper.implementation.v7.region;
 
-import com.sk89q.worldedit.BlockVector2D;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.math.BlockVector2;
 import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import lombok.AllArgsConstructor;
@@ -34,7 +34,7 @@ public class WrappedRegion implements IWrappedRegion {
                 @Override
                 public Set<Location> getPoints() {
                     return handle.getPoints().stream()
-                            .map(BlockVector2D::toVector)
+                            .map(BlockVector2::toBlockVector3)
                             .map(vector -> BukkitAdapter.adapt(world, vector))
                             .collect(Collectors.toSet());
                 }
@@ -168,7 +168,7 @@ public class WrappedRegion implements IWrappedRegion {
 
     @Override
     public boolean contains(Location location) {
-        return handle.contains(BukkitAdapter.asVector(location));
+        return handle.contains(BukkitAdapter.asBlockVector(location));
     }
 
 }

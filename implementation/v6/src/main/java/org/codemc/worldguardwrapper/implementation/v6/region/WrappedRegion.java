@@ -3,7 +3,6 @@ package org.codemc.worldguardwrapper.implementation.v6.region;
 import com.sk89q.worldedit.BlockVector;
 import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.bukkit.Location;

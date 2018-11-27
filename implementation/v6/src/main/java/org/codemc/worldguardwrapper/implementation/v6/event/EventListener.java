@@ -7,10 +7,10 @@ import com.sk89q.worldguard.protection.events.DisallowedPVPEvent;
 import lombok.NoArgsConstructor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event.Result;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.Event.Result;
 import org.codemc.worldguardwrapper.event.*;
 
 @NoArgsConstructor

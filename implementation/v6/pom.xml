@@ -50,10 +50,6 @@
                     <artifactId>snakeyaml</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>com.google.code.findbugs</groupId>
-                    <artifactId>jsr305</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>com.thoughtworks.paranamer</groupId>
                     <artifactId>paranamer</artifactId>
                 </exclusion>

@@ -35,6 +35,46 @@
                     <groupId>com.sk89q</groupId>
                     <artifactId>commandbook</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.sk89q</groupId>
+                    <artifactId>dummypermscompat</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sk89q.intake</groupId>
+                    <artifactId>intake</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sk89q</groupId>
+                    <artifactId>squirrelid</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.khelekore</groupId>
+                    <artifactId>prtree</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.sf.opencsv</groupId>
+                    <artifactId>opencsv</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.googlecode.json-simple</groupId>
+                    <artifactId>json-simple</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.flywaydb</groupId>
+                    <artifactId>flyway-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.papermc</groupId>
+                    <artifactId>paperlib</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.bstats.bStats-Metrics</groupId>
+                    <artifactId>bstats-bukkit</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.bstats</groupId>
+                    <artifactId>bstats-bukkit</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
     </dependencies>
