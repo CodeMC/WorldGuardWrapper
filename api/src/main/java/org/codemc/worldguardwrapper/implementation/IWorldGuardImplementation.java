@@ -5,8 +5,8 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.codemc.worldguardwrapper.flag.AbstractWrappedFlag;
-import org.codemc.worldguardwrapper.region.WrappedRegion;
+import org.codemc.worldguardwrapper.flag.IWrappedFlag;
+import org.codemc.worldguardwrapper.region.IWrappedRegion;
 
 import java.util.*;
 
@@ -31,31 +31,39 @@ public interface IWorldGuardImplementation {
      *
      * @param player   The player
      * @param location The location
-     * @param flagName The name of the flag
-     * @param type     The type of the flag's value
-     * @return The flag's value
-     */
-    <T> Optional<T> queryFlag(Player player, @NonNull Location location, @NonNull String flagName, Class<T> type);
-
-    /**
-     * Query a flag's value for a given player at a given location.
-     *
-     * @param player   The player
-     * @param location The location
      * @param flag     The flag
      * @return The flag's value
      */
-    default <T> Optional<T> queryFlag(Player player, @NonNull Location location, @NonNull AbstractWrappedFlag<T> flag) {
-        return queryFlag(player, location, flag.getName(), flag.getType());
-    }
+    <T> Optional<T> queryFlag(Player player, @NonNull Location location, @NonNull IWrappedFlag<T> flag);
 
     /**
-     * Register a flag to WorldGuard's flag registry.
+     * Returns the flag with the given name.
      *
-     * @param flag The flag to register
-     * @return Whether the flag has been registered
+     * @param name The flag name
+     * @return The flag, empty if it doesn't exists
      */
-    boolean registerFlag(@NonNull AbstractWrappedFlag<?> flag);
+    Optional<IWrappedFlag<?>> getFlag(@NonNull String name);
+
+    /**
+     * Registers a flag to WorldGuard's flag registry.
+     *
+     * @param name         The flag name
+     * @param type         The flag type
+     * @param defaultValue the flag default value (if supported by the type), can be null
+     * @return The created flag, empty if a name conflict occurred
+     */
+    <T> Optional<IWrappedFlag<T>> registerFlag(@NonNull String name, @NonNull Class<T> type, T defaultValue);
+
+    /**
+     * Registers a flag to WorldGuard's flag registry.
+     *
+     * @param name The flag name
+     * @param type The flag type
+     * @return The created flag, empty if a name conflict occurred
+     */
+    default <T> Optional<IWrappedFlag<T>> registerFlag(@NonNull String name, @NonNull Class<T> type) {
+        return registerFlag(name, type, null);
+    }
 
     /**
      * Get a region by its ID.
@@ -64,7 +72,7 @@ public interface IWorldGuardImplementation {
      * @param id    ID of the region
      * @return The region
      */
-    Optional<WrappedRegion> getRegion(@NonNull World world, @NonNull String id);
+    Optional<IWrappedRegion> getRegion(@NonNull World world, @NonNull String id);
 
     /**
      * Get an unmodifiable map of regions containing the state of the
@@ -76,7 +84,7 @@ public interface IWorldGuardImplementation {
      * @param world The world
      * @return A map of regions
      */
-    Map<String, WrappedRegion> getRegions(@NonNull World world);
+    Map<String, IWrappedRegion> getRegions(@NonNull World world);
 
     /**
      * Get a set of regions at the given location.
@@ -84,7 +92,7 @@ public interface IWorldGuardImplementation {
      * @param location The location
      * @return A set of regions
      */
-    Set<WrappedRegion> getRegions(@NonNull Location location);
+    Set<IWrappedRegion> getRegions(@NonNull Location location);
 
 
     /**
@@ -94,7 +102,7 @@ public interface IWorldGuardImplementation {
      * @param maximum The maximum location of the area
      * @return A set of regions
      */
-    Set<WrappedRegion> getRegions(@NonNull Location minimum, @NonNull Location maximum);
+    Set<IWrappedRegion> getRegions(@NonNull Location minimum, @NonNull Location maximum);
 
     /**
      * Add a region. If only two points are given, a cuboid region will be created.
@@ -105,7 +113,7 @@ public interface IWorldGuardImplementation {
      * @param maxY   The maximum y coordinate
      * @return The added region
      */
-    Optional<WrappedRegion> addRegion(@NonNull String id, @NonNull List<Location> points, int minY, int maxY);
+    Optional<IWrappedRegion> addRegion(@NonNull String id, @NonNull List<Location> points, int minY, int maxY);
 
     /**
      * Add a cuboid region.
@@ -115,7 +123,7 @@ public interface IWorldGuardImplementation {
      * @param point2 The second point of the region
      * @return The added region
      */
-    default Optional<WrappedRegion> addCuboidRegion(@NonNull String id, @NonNull Location point1, @NonNull Location point2) {
+    default Optional<IWrappedRegion> addCuboidRegion(@NonNull String id, @NonNull Location point1, @NonNull Location point2) {
         return addRegion(id, Arrays.asList(point1, point2), 0, 0);
     }
 
@@ -126,6 +134,6 @@ public interface IWorldGuardImplementation {
      * @param id    The region ID
      * @return A list of removed regions where the first entry is the region specified by {@code id}
      */
-    Optional<Set<WrappedRegion>> removeRegion(@NonNull World world, @NonNull String id);
+    Optional<Set<IWrappedRegion>> removeRegion(@NonNull World world, @NonNull String id);
 
 }

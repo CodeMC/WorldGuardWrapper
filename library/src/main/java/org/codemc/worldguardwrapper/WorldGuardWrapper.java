@@ -27,13 +27,20 @@ public class WorldGuardWrapper implements IWorldGuardImplementation {
     private Listener eventListener;
 
     private WorldGuardWrapper() {
+        String version;
         try {
             Class.forName("com.sk89q.worldguard.WorldGuard");
-            delegate = new org.codemc.worldguardwrapper.implementation.v7.WorldGuardImplementation();
-            eventListener = new org.codemc.worldguardwrapper.implementation.v7.EventListener();
+            version = "v7";
         } catch (ClassNotFoundException e) {
-            delegate = new org.codemc.worldguardwrapper.implementation.v6.WorldGuardImplementation();
-            eventListener = new org.codemc.worldguardwrapper.implementation.v6.EventListener();
+            version = "v6";
+        }
+        try {
+            delegate = (IWorldGuardImplementation) Class.forName("org.codemc.worldguardwrapper.implementation."
+                    + version + ".WorldGuardImplementation").newInstance();
+            eventListener = (Listener) Class.forName("new org.codemc.worldguardwrapper.implementation."
+                    + version + ".event.EventListener").newInstance();
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            throw new RuntimeException("Unable to initialize WorldGuard implementation " + version, e);
         }
     }
 

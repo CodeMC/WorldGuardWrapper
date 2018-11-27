@@ -3,7 +3,7 @@ package org.codemc.worldguardwrapper.region;
 import java.util.Set;
 import java.util.UUID;
 
-public interface WrappedDomain {
+public interface IWrappedDomain {
 
     Set<UUID> getPlayers();
 
