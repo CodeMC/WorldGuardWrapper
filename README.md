@@ -21,7 +21,7 @@ How to include WorldEditWrapper into your maven project:
         <dependency>
             <groupId>org.codemc.worldguardwrapper</groupId>
             <artifactId>worldguardwrapper</artifactId>
-            <version>1.0.3-SNAPSHOT</version>
+            <version>1.1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 ```
@@ -34,7 +34,7 @@ Remember to include/relocate the library into your final jar, example:
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.2.1</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
