@@ -4,7 +4,7 @@ import org.bukkit.Location;
 
 import java.util.Set;
 
-public interface PolygonalSelection extends Selection {
+public interface IPolygonalSelection extends ISelection {
 
     Set<Location> getPoints();
 

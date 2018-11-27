@@ -1,0 +1,30 @@
+package org.codemc.worldguardwrapper.region;
+
+import org.bukkit.Location;
+import org.codemc.worldguardwrapper.flag.IWrappedFlag;
+import org.codemc.worldguardwrapper.selection.ISelection;
+
+import java.util.Map;
+import java.util.Optional;
+
+public interface IWrappedRegion {
+
+    ISelection getSelection();
+
+    String getId();
+
+    <T> Optional<T> getFlag(IWrappedFlag<T> flag);
+
+    <T> void setFlag(IWrappedFlag<T> flag, T value);
+
+    Map<IWrappedFlag<?>, Object> getFlags();
+
+    int getPriority();
+
+    IWrappedDomain getOwners();
+
+    IWrappedDomain getMembers();
+
+    boolean contains(Location location);
+
+}
