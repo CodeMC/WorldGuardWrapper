@@ -72,10 +72,12 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
         return queryValue(player, location, wrappedFlag);
     }
 
+
+    @SuppressWarnings("unchecked")
     @Override
-    public Optional<IWrappedFlag<?>> getFlag(String name) {
+    public <T> Optional<IWrappedFlag<T>> getFlag(String name, Class<T> type) {
         return Optional.ofNullable(flagRegistry.get(name))
-                .map(WrappedFlag::new);
+                .map(flag -> (IWrappedFlag<T>) new WrappedFlag(flag));
     }
 
     @SuppressWarnings("unchecked")

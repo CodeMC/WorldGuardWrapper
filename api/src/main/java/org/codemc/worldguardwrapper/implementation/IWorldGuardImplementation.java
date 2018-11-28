@@ -40,9 +40,10 @@ public interface IWorldGuardImplementation {
      * Returns the flag with the given name.
      *
      * @param name The flag name
+     * @param type The flag type
      * @return The flag, empty if it doesn't exists
      */
-    Optional<IWrappedFlag<?>> getFlag(@NonNull String name);
+    <T> Optional<IWrappedFlag<T>> getFlag(String name, Class<T> type);
 
     /**
      * Registers a flag to WorldGuard's flag registry.
