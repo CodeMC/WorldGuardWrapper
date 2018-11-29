@@ -23,24 +23,23 @@ public class WorldGuardWrapper implements IWorldGuardImplementation {
     }
 
     @Delegate
-    private IWorldGuardImplementation delegate;
-    private Listener eventListener;
+    private IWorldGuardImplementation implementation;
+    private Listener listener;
 
     private WorldGuardWrapper() {
-        String version;
+        boolean legacy;
         try {
             Class.forName("com.sk89q.worldguard.WorldGuard");
-            version = "v7";
+            legacy = false;
         } catch (ClassNotFoundException e) {
-            version = "v6";
+            legacy = true;
         }
-        try {
-            delegate = (IWorldGuardImplementation) Class.forName("org.codemc.worldguardwrapper.implementation."
-                    + version + ".WorldGuardImplementation").newInstance();
-            eventListener = (Listener) Class.forName("new org.codemc.worldguardwrapper.implementation."
-                    + version + ".event.EventListener").newInstance();
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-            throw new RuntimeException("Unable to initialize WorldGuard implementation " + version, e);
+        if (legacy) {
+            implementation = new org.codemc.worldguardwrapper.implementation.v6.WorldGuardImplementation();
+            listener = new org.codemc.worldguardwrapper.implementation.v6.event.EventListener();
+        } else {
+            implementation = new org.codemc.worldguardwrapper.implementation.v7.WorldGuardImplementation();
+            listener = new org.codemc.worldguardwrapper.implementation.v7.event.EventListener();
         }
     }
 
@@ -51,7 +50,7 @@ public class WorldGuardWrapper implements IWorldGuardImplementation {
      * @param plugin the plugin instance
      */
     public void registerEvents(JavaPlugin plugin) {
-        Bukkit.getPluginManager().registerEvents(eventListener, plugin);
+        Bukkit.getPluginManager().registerEvents(listener, plugin);
     }
 
 }
