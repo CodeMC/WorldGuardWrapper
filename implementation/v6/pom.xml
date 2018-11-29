@@ -30,7 +30,7 @@
         <dependency>
             <groupId>com.sk89q.worldedit</groupId>
             <artifactId>worldedit-core</artifactId>
-            <version>6.1.4-SNAPSHOT</version>
+            <version>7.0.0-beta-02</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
