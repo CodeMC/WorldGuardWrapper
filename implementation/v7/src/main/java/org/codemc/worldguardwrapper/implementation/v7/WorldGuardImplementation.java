@@ -24,7 +24,9 @@ import org.bukkit.util.Vector;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 import org.codemc.worldguardwrapper.flag.WrappedState;
 import org.codemc.worldguardwrapper.implementation.IWorldGuardImplementation;
-import org.codemc.worldguardwrapper.implementation.v7.flag.WrappedFlag;
+import org.codemc.worldguardwrapper.implementation.v7.flag.AbstractWrappedFlag;
+import org.codemc.worldguardwrapper.implementation.v7.flag.WrappedPrimitiveFlag;
+import org.codemc.worldguardwrapper.implementation.v7.flag.WrappedStatusFlag;
 import org.codemc.worldguardwrapper.implementation.v7.region.WrappedRegion;
 import org.codemc.worldguardwrapper.region.IWrappedRegion;
 
@@ -60,6 +62,32 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
                 .orElse(null), flag));
     }
 
+    // TODO: find a better way to define wrapper mappings and register mappings
+    @SuppressWarnings("unchecked")
+    private <T> IWrappedFlag<T> wrap(Flag<?> flag, Class<T> type) {
+        final IWrappedFlag<T> wrappedFlag;
+        if (type.equals(WrappedState.class)) {
+            wrappedFlag = (IWrappedFlag<T>) new WrappedStatusFlag((Flag<StateFlag.State>) flag);
+        } else if (type.equals(Boolean.class) || type.equals(boolean.class)) {
+            wrappedFlag = new WrappedPrimitiveFlag(flag);
+        } else if (type.equals(Double.class) || type.equals(double.class)) {
+            wrappedFlag = new WrappedPrimitiveFlag(flag);
+        } else if (type.equals(Enum.class)) {
+            wrappedFlag = new WrappedPrimitiveFlag(flag);
+        } else if (type.equals(Integer.class) || type.equals(int.class)) {
+            wrappedFlag = new WrappedPrimitiveFlag(flag);
+        } else if (type.equals(Location.class)) {
+            wrappedFlag = new WrappedPrimitiveFlag(flag);
+        } else if (type.equals(String.class)) {
+            wrappedFlag = new WrappedPrimitiveFlag(flag);
+        } else if (type.equals(Vector.class)) {
+            wrappedFlag = new WrappedPrimitiveFlag(flag);
+        } else {
+            throw new IllegalArgumentException("Unsupported flag type " + type.getName());
+        }
+        return wrappedFlag;
+    }
+
     @Override
     public JavaPlugin getWorldGuardPlugin() {
         return WorldGuardPlugin.inst();
@@ -71,44 +99,43 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     }
 
     @Override
-    public <T> Optional<T> queryFlag(Player player, Location location, IWrappedFlag<T> flag) {
-        Flag<T> wrappedFlag = ((WrappedFlag<T>) flag).getHandle();
-        return queryValue(player, location, wrappedFlag);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
     public <T> Optional<IWrappedFlag<T>> getFlag(String name, Class<T> type) {
         return Optional.ofNullable(flagRegistry.get(name))
-                .map(flag -> (IWrappedFlag<T>) new WrappedFlag(flag));
+                .map(flag -> wrap(flag, type));
+    }
+
+    @Override
+    public <T> Optional<T> queryFlag(Player player, Location location, IWrappedFlag<T> flag) {
+        AbstractWrappedFlag<T> wrappedFlag = (AbstractWrappedFlag<T>) flag;
+        return wrappedFlag.fromWGValue(queryValue(player, location, wrappedFlag.getHandle()));
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public <T> Optional<IWrappedFlag<T>> registerFlag(String name, Class<T> type, T defaultValue) {
-        final Flag<T> wrappedFlag;
-        if (type.equals(Boolean.class) || type.equals(boolean.class)) {
-            wrappedFlag = (Flag<T>) new BooleanFlag(name);
+        final Flag<?> flag;
+        if (type.equals(WrappedState.class)) {
+            flag = new StateFlag(name, defaultValue == WrappedState.ALLOW);
+        } else if (type.equals(Boolean.class) || type.equals(boolean.class)) {
+            flag = new BooleanFlag(name);
         } else if (type.equals(Double.class) || type.equals(double.class)) {
-            wrappedFlag = (Flag<T>) new DoubleFlag(name);
+            flag = new DoubleFlag(name);
         } else if (type.equals(Enum.class)) {
-            wrappedFlag = new EnumFlag(name, type);
+            flag = new EnumFlag(name, type);
         } else if (type.equals(Integer.class) || type.equals(int.class)) {
-            wrappedFlag = (Flag<T>) new IntegerFlag(name);
+            flag = new IntegerFlag(name);
         } else if (type.equals(Location.class)) {
-            wrappedFlag = (Flag<T>) new LocationFlag(name);
-        } else if (type.equals(WrappedState.class)) {
-            wrappedFlag = (Flag<T>) new StateFlag(name, defaultValue == WrappedState.ALLOW);
+            flag = new LocationFlag(name);
         } else if (type.equals(String.class)) {
-            wrappedFlag = (Flag<T>) new StringFlag(name, (String) defaultValue);
+            flag = new StringFlag(name, (String) defaultValue);
         } else if (type.equals(Vector.class)) {
-            wrappedFlag = (Flag<T>) new VectorFlag(name);
+            flag = new VectorFlag(name);
         } else {
             throw new IllegalArgumentException("Unsupported flag type " + type.getName());
         }
         try {
-            flagRegistry.register(wrappedFlag);
-            return Optional.of(new WrappedFlag<>(wrappedFlag));
+            flagRegistry.register(flag);
+            return Optional.of(wrap(flag, type));
         } catch (FlagConflictException ignored) {
         }
         return Optional.empty();

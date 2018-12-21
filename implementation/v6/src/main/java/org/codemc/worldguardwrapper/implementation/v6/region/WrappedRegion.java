@@ -8,7 +8,7 @@ import lombok.Getter;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
-import org.codemc.worldguardwrapper.implementation.v6.flag.WrappedFlag;
+import org.codemc.worldguardwrapper.implementation.v6.flag.AbstractWrappedFlag;
 import org.codemc.worldguardwrapper.implementation.v6.utility.WorldGuardVectorUtilities;
 import org.codemc.worldguardwrapper.region.IWrappedDomain;
 import org.codemc.worldguardwrapper.region.IWrappedRegion;
@@ -72,23 +72,16 @@ public class WrappedRegion implements IWrappedRegion {
     @SuppressWarnings("unchecked")
     @Override
     public <T> Optional<T> getFlag(IWrappedFlag<T> flag) {
-        Flag wrappedFlag = ((WrappedFlag) flag).getHandle();
-        return Optional.ofNullable(handle.getFlag(wrappedFlag))
-                .map(value -> (T) value);
+        AbstractWrappedFlag<T> wrappedFlag = (AbstractWrappedFlag<T>) flag;
+        return Optional.ofNullable(handle.getFlag(wrappedFlag.getHandle()))
+                .map(value -> (T) wrappedFlag.fromWGValue(value));
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public <T> void setFlag(IWrappedFlag<T> flag, T value) {
-        Flag wrappedFlag = ((WrappedFlag) flag).getHandle();
-        handle.setFlag(wrappedFlag, value);
-    }
-
-    @Override
-    public Map<IWrappedFlag<?>, Object> getFlags() {
-        Map<IWrappedFlag<?>, Object> map = new HashMap<>();
-        handle.getFlags().forEach((flag, value) -> map.put(new WrappedFlag<>(flag), value));
-        return map;
+        AbstractWrappedFlag<T> wrappedFlag = (AbstractWrappedFlag<T>) flag;
+        handle.setFlag((Flag<Object>) wrappedFlag.getHandle(), wrappedFlag.fromWrapperValue(value).orElse(null));
     }
 
     @Override

@@ -23,4 +23,5 @@ public class WorldGuardVectorUtilities {
     public List<BlockVector2D> toBlockVector2DList(List<Location> locations) {
         return locations.stream().map(location -> new BlockVector2D(location.getX(), location.getZ())).collect(Collectors.toList());
     }
+
 }

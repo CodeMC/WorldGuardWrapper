@@ -21,7 +21,7 @@ How to include WorldEditWrapper into your maven project:
         <dependency>
             <groupId>org.codemc.worldguardwrapper</groupId>
             <artifactId>worldguardwrapper</artifactId>
-            <version>1.1.0-SNAPSHOT</version>
+            <version>1.1.2-SNAPSHOT</version>
         </dependency>
     </dependencies>
 ```

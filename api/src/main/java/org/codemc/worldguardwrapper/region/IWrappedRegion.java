@@ -17,8 +17,6 @@ public interface IWrappedRegion {
 
     <T> void setFlag(IWrappedFlag<T> flag, T value);
 
-    Map<IWrappedFlag<?>, Object> getFlags();
-
     int getPriority();
 
     IWrappedDomain getOwners();

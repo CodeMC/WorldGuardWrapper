@@ -9,18 +9,22 @@ import java.util.Optional;
 
 @AllArgsConstructor
 @Getter
-public class WrappedFlag<T> implements IWrappedFlag<T> {
+public abstract class AbstractWrappedFlag<T> implements IWrappedFlag<T> {
 
-    private final Flag<T> handle;
+    private final Flag<?> handle;
 
     @Override
     public String getName() {
         return handle.getName();
     }
 
+    public abstract Optional<T> fromWGValue(Object value);
+
+    public abstract Optional<Object> fromWrapperValue(T value);
+
     @Override
     public Optional<T> getDefaultValue() {
-        return Optional.ofNullable(handle.getDefault());
+        return fromWGValue(handle.getDefault());
     }
 
 }
