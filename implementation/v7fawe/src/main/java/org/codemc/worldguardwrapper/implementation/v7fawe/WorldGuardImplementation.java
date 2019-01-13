@@ -1,6 +1,11 @@
-package org.codemc.worldguardwrapper.implementation.v6;
+package org.codemc.worldguardwrapper.implementation.v7fawe;
 
+import com.sk89q.worldedit.BlockVector;
+import com.sk89q.worldedit.BlockVector2D;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldguard.LocalPlayer;
+import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.*;
@@ -20,11 +25,10 @@ import org.bukkit.util.Vector;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 import org.codemc.worldguardwrapper.flag.WrappedState;
 import org.codemc.worldguardwrapper.implementation.IWorldGuardImplementation;
-import org.codemc.worldguardwrapper.implementation.v6.flag.AbstractWrappedFlag;
-import org.codemc.worldguardwrapper.implementation.v6.flag.WrappedPrimitiveFlag;
-import org.codemc.worldguardwrapper.implementation.v6.flag.WrappedStatusFlag;
-import org.codemc.worldguardwrapper.implementation.v6.region.WrappedRegion;
-import org.codemc.worldguardwrapper.implementation.v6.utility.WorldGuardVectorUtilities;
+import org.codemc.worldguardwrapper.implementation.v7fawe.flag.AbstractWrappedFlag;
+import org.codemc.worldguardwrapper.implementation.v7fawe.flag.WrappedPrimitiveFlag;
+import org.codemc.worldguardwrapper.implementation.v7fawe.flag.WrappedStatusFlag;
+import org.codemc.worldguardwrapper.implementation.v7fawe.region.WrappedRegion;
 import org.codemc.worldguardwrapper.region.IWrappedRegion;
 
 import java.util.*;
@@ -33,24 +37,29 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class WorldGuardImplementation implements IWorldGuardImplementation {
 
+    private final WorldGuard core = WorldGuard.getInstance();
+    private final FlagRegistry flagRegistry = core.getFlagRegistry();
     private final WorldGuardPlugin plugin = WorldGuardPlugin.inst();
-    private final FlagRegistry flagRegistry = plugin.getFlagRegistry();
+
+    public static BlockVector asBlockVector(@NonNull Location location) {
+        return new BlockVector(BukkitAdapter.asVector(location));
+    }
 
     private Optional<LocalPlayer> wrapPlayer(Player player) {
         return Optional.ofNullable(player).map(bukkitPlayer -> plugin.wrapPlayer(player));
     }
 
     private Optional<RegionManager> getWorldManager(@NonNull World world) {
-        return Optional.ofNullable(plugin.getRegionManager(world));
+        return Optional.ofNullable(core.getPlatform().getRegionContainer().get(BukkitAdapter.adapt(world)));
     }
 
     private Optional<ApplicableRegionSet> getApplicableRegions(@NonNull Location location) {
-        return getWorldManager(location.getWorld()).map(manager -> manager.getApplicableRegions(location));
+        return getWorldManager(location.getWorld()).map(manager -> manager.getApplicableRegions(asBlockVector(location)));
     }
 
     private Optional<ApplicableRegionSet> getApplicableRegions(@NonNull Location minimum, @NonNull Location maximum) {
         return getWorldManager(minimum.getWorld()).map(manager -> manager.getApplicableRegions(
-                new ProtectedCuboidRegion("temp", WorldGuardVectorUtilities.toBlockVector(minimum), WorldGuardVectorUtilities.toBlockVector(maximum))));
+                new ProtectedCuboidRegion("temp", asBlockVector(minimum), asBlockVector(maximum))));
     }
 
     private <V> Optional<V> queryValue(Player player, @NonNull Location location, @NonNull Flag<V> flag) {
@@ -91,7 +100,7 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
 
     @Override
     public int getApiVersion() {
-        return 6;
+        return 7;
     }
 
     @Override
@@ -139,44 +148,46 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
 
     @Override
     public Optional<IWrappedRegion> getRegion(World world, String id) {
-        return getWorldManager(world).map(regionManager -> new WrappedRegion(world, regionManager.getRegion(id)));
+        return getWorldManager(world)
+                .map(regionManager -> regionManager.getRegion(id))
+                .map(region -> new WrappedRegion(world, region));
     }
 
     @Override
     public Map<String, IWrappedRegion> getRegions(World world) {
-        RegionManager regionManager = plugin.getRegionManager(world);
-        Map<String, ProtectedRegion> regions = regionManager.getRegions();
+        RegionManager regionManager = core.getPlatform().getRegionContainer().get(new BukkitWorld(world));
+        if (regionManager == null) {
+            return Collections.emptyMap();
+        }
 
+        Map<String, ProtectedRegion> regions = regionManager.getRegions();
         Map<String, IWrappedRegion> map = new HashMap<>();
         regions.forEach((name, region) -> map.put(name, new WrappedRegion(world, region)));
-
         return map;
     }
 
     @Override
     public Set<IWrappedRegion> getRegions(Location location) {
         ApplicableRegionSet regionSet = getApplicableRegions(location).orElse(null);
-        Set<IWrappedRegion> set = new HashSet<>();
-
         if (regionSet == null) {
-            return set;
+            return Collections.emptySet();
         }
 
-        regionSet.forEach(region -> set.add(new WrappedRegion(location.getWorld(), region)));
-        return set;
+        return regionSet.getRegions().stream()
+                .map(region -> new WrappedRegion(location.getWorld(), region))
+                .collect(Collectors.toSet());
     }
 
     @Override
     public Set<IWrappedRegion> getRegions(Location minimum, Location maximum) {
         ApplicableRegionSet regionSet = getApplicableRegions(minimum, maximum).orElse(null);
-        Set<IWrappedRegion> set = new HashSet<>();
-
         if (regionSet == null) {
-            return set;
+            return Collections.emptySet();
         }
 
-        regionSet.forEach(region -> set.add(new WrappedRegion(minimum.getWorld(), region)));
-        return set;
+        return regionSet.getRegions().stream()
+                .map(region -> new WrappedRegion(minimum.getWorld(), region))
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -184,9 +195,14 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
         ProtectedRegion region;
         World world = points.get(0).getWorld();
         if (points.size() == 2) {
-            region = new ProtectedCuboidRegion(id, WorldGuardVectorUtilities.toBlockVector(points.get(0)), WorldGuardVectorUtilities.toBlockVector(points.get(1)));
+            region = new ProtectedCuboidRegion(id, asBlockVector(points.get(0)),
+                    asBlockVector(points.get(1)));
         } else {
-            region = new ProtectedPolygonalRegion(id, WorldGuardVectorUtilities.toBlockVector2DList(points), minY, maxY);
+            List<BlockVector2D> vectorPoints = points.stream()
+                    .map(location -> asBlockVector(location).toBlockVector2D())
+                    .collect(Collectors.toList());
+
+            region = new ProtectedPolygonalRegion(id, vectorPoints, minY, maxY);
         }
 
         Optional<RegionManager> manager = getWorldManager(world);
@@ -201,8 +217,7 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     @Override
     public Optional<Set<IWrappedRegion>> removeRegion(World world, String id) {
         Optional<Set<ProtectedRegion>> set = getWorldManager(world).map(manager -> manager.removeRegion(id));
-        return set.map(protectedRegions -> protectedRegions.stream().map(region -> new WrappedRegion(world, region))
-                .collect(Collectors.toSet()));
+        return set.map(protectedRegions -> protectedRegions.stream()
+                .map(region -> new WrappedRegion(world, region)).collect(Collectors.toSet()));
     }
-
 }

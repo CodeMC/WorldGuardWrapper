@@ -1,6 +1,6 @@
-package org.codemc.worldguardwrapper.implementation.v6.region;
+package org.codemc.worldguardwrapper.implementation.v7fawe.region;
 
-import com.sk89q.worldedit.BlockVector;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import lombok.AllArgsConstructor;
@@ -8,8 +8,8 @@ import lombok.Getter;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
-import org.codemc.worldguardwrapper.implementation.v6.flag.AbstractWrappedFlag;
-import org.codemc.worldguardwrapper.implementation.v6.utility.WorldGuardVectorUtilities;
+import org.codemc.worldguardwrapper.implementation.v7fawe.WorldGuardImplementation;
+import org.codemc.worldguardwrapper.implementation.v7fawe.flag.AbstractWrappedFlag;
 import org.codemc.worldguardwrapper.region.IWrappedDomain;
 import org.codemc.worldguardwrapper.region.IWrappedRegion;
 import org.codemc.worldguardwrapper.selection.ICuboidSelection;
@@ -36,8 +36,8 @@ public class WrappedRegion implements IWrappedRegion {
                 @Override
                 public Set<Location> getPoints() {
                     return handle.getPoints().stream()
-                            .map(vector -> new BlockVector(vector.toVector()))
-                            .map(vector -> WorldGuardVectorUtilities.fromBlockVector(world, vector))
+                            .map(blockVector2D -> blockVector2D.toVector(0))
+                            .map(vector -> BukkitAdapter.adapt(world, vector))
                             .collect(Collectors.toSet());
                 }
 
@@ -56,12 +56,12 @@ public class WrappedRegion implements IWrappedRegion {
 
             @Override
             public Location getMinimumPoint() {
-                return WorldGuardVectorUtilities.fromBlockVector(world, handle.getMinimumPoint());
+                return BukkitAdapter.adapt(world, handle.getMinimumPoint());
             }
 
             @Override
             public Location getMaximumPoint() {
-                return WorldGuardVectorUtilities.fromBlockVector(world, handle.getMaximumPoint());
+                return BukkitAdapter.adapt(world, handle.getMaximumPoint());
             }
         };
     }
@@ -163,7 +163,7 @@ public class WrappedRegion implements IWrappedRegion {
 
     @Override
     public boolean contains(Location location) {
-        return handle.contains(WorldGuardVectorUtilities.toBlockVector(location));
+        return handle.contains(WorldGuardImplementation.asBlockVector(location));
     }
 
 }

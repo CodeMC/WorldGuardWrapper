@@ -38,8 +38,13 @@ public class WorldGuardWrapper implements IWorldGuardImplementation {
             implementation = new org.codemc.worldguardwrapper.implementation.v6.WorldGuardImplementation();
             listener = new org.codemc.worldguardwrapper.implementation.v6.event.EventListener();
         } else {
-            implementation = new org.codemc.worldguardwrapper.implementation.v7.WorldGuardImplementation();
-            listener = new org.codemc.worldguardwrapper.implementation.v7.event.EventListener();
+            if (Bukkit.getPluginManager().isPluginEnabled("FastAsyncWorldEdit")) {
+                implementation = new org.codemc.worldguardwrapper.implementation.v7fawe.WorldGuardImplementation();
+                listener = new org.codemc.worldguardwrapper.implementation.v7fawe.event.EventListener();
+            } else {
+                implementation = new org.codemc.worldguardwrapper.implementation.v7.WorldGuardImplementation();
+                listener = new org.codemc.worldguardwrapper.implementation.v7.event.EventListener();
+            }
         }
     }
 

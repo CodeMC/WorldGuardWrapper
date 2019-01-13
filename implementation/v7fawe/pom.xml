@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.codemc.worldguardwrapper</groupId>
+        <artifactId>worldguardwrapper-implementation</artifactId>
+        <version>1.1.3-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>worldguardwrapper-implementation-v7-fawe</artifactId>
+
+    <name>WorldGuardWrapper-Implementation-V7-FAWE</name>
+
+    <repositories>
+        <repository>
+            <id>fawe-repo</id>
+            <url>http://ci.athion.net/job/FAWE-1.13/ws/mvn/</url>
+            <releases>
+                <updatePolicy>always</updatePolicy>
+            </releases>
+        </repository>
+        <repository>
+            <id>worldguard-repo</id>
+            <url>http://ci.athion.net/job/FAWE-WorldGuard-1.13/ws/mvn/</url>
+            <releases>
+                <updatePolicy>always</updatePolicy>
+            </releases>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>worldguardwrapper-api</artifactId>
+            <version>1.1.3-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.boydti</groupId>
+            <artifactId>fawe-api</artifactId>
+            <version>latest</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.boydti</groupId>
+            <artifactId>fawe-bukkit</artifactId>
+            <version>latest</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sk89q</groupId>
+            <artifactId>worldguard-core</artifactId>
+            <version>latest</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sk89q</groupId>
+            <artifactId>worldguard-legacy</artifactId>
+            <version>latest</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>
