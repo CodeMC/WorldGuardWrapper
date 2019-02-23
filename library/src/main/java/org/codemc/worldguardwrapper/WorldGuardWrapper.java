@@ -27,16 +27,24 @@ public class WorldGuardWrapper implements IWorldGuardImplementation {
     private Listener listener;
 
     private WorldGuardWrapper() {
-        boolean legacy;
+        int targetVersion;
         try {
             Class.forName("com.sk89q.worldguard.WorldGuard");
-            legacy = false;
+            targetVersion = 7;
         } catch (ClassNotFoundException e) {
-            legacy = true;
+            try {
+                Class.forName("com.sk89q.worldguard.protection.flags.registry.FlagRegistry");
+                targetVersion = 6;
+            } catch (ClassNotFoundException e1) {
+                targetVersion = -6;
+            }
         }
-        if (legacy) {
+        if (targetVersion == 6) {
             implementation = new org.codemc.worldguardwrapper.implementation.v6.WorldGuardImplementation();
             listener = new org.codemc.worldguardwrapper.implementation.v6.event.EventListener();
+        } else if (targetVersion == -6) {
+            implementation = new org.codemc.worldguardwrapper.implementation.legacy.WorldGuardImplementation();
+            listener = new org.codemc.worldguardwrapper.implementation.legacy.event.EventListener();
         } else {
             if (Bukkit.getPluginManager().isPluginEnabled("FastAsyncWorldEdit")) {
                 implementation = new org.codemc.worldguardwrapper.implementation.v7fawe.WorldGuardImplementation();
