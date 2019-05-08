@@ -106,7 +106,7 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     @Override
     public <T> Optional<T> queryFlag(Player player, Location location, IWrappedFlag<T> flag) {
         AbstractWrappedFlag<T> wrappedFlag = (AbstractWrappedFlag<T>) flag;
-        return wrappedFlag.fromWGValue(queryValue(player, location, wrappedFlag.getHandle()));
+        return queryValue(player, location, wrappedFlag.getHandle()).flatMap(value -> wrappedFlag.fromWGValue(value));
     }
 
     @Override
