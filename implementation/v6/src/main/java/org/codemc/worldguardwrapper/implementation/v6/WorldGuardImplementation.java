@@ -139,7 +139,9 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
 
     @Override
     public Optional<IWrappedRegion> getRegion(World world, String id) {
-        return getWorldManager(world).map(regionManager -> new WrappedRegion(world, regionManager.getRegion(id)));
+        return getWorldManager(world)
+                .map(regionManager -> regionManager.getRegion(id))
+                .map(region -> new WrappedRegion(world, region));
     }
 
     @Override
