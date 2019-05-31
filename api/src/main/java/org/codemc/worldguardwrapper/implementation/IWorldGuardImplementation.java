@@ -7,6 +7,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 import org.codemc.worldguardwrapper.region.IWrappedRegion;
+import org.codemc.worldguardwrapper.selection.ICuboidSelection;
+import org.codemc.worldguardwrapper.selection.IPolygonalSelection;
+import org.codemc.worldguardwrapper.selection.ISelection;
 
 import java.util.*;
 
@@ -126,6 +129,24 @@ public interface IWorldGuardImplementation {
      */
     default Optional<IWrappedRegion> addCuboidRegion(@NonNull String id, @NonNull Location point1, @NonNull Location point2) {
         return addRegion(id, Arrays.asList(point1, point2), 0, 0);
+    }
+
+    /**
+     * Add a region for the given selection.
+     * 
+     * @param id        The region ID
+     * @param selection The selection for the region's volume
+     * @return The added region
+     */
+    default Optional<IWrappedRegion> addRegion(@NonNull String id, @NonNull ISelection selection) {
+        if (selection instanceof ICuboidSelection) {
+            ICuboidSelection sel = (ICuboidSelection) selection;
+            return addCuboidRegion(id, sel.getMinimumPoint(), sel.getMaximumPoint());
+        } else if (selection instanceof IPolygonalSelection) {
+            IPolygonalSelection sel = (IPolygonalSelection) selection;
+            return addRegion(id, new ArrayList<>(sel.getPoints()), sel.getMinimumY(), sel.getMaximumY());
+        }
+        return Optional.empty();
     }
 
     /**
