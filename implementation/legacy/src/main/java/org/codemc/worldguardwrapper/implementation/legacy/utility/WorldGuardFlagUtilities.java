@@ -1,11 +1,13 @@
 package org.codemc.worldguardwrapper.implementation.legacy.utility;
 
-import java.util.Vector;
-
+import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.util.Vector;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 import org.codemc.worldguardwrapper.flag.WrappedState;
 import org.codemc.worldguardwrapper.implementation.legacy.flag.WrappedPrimitiveFlag;
@@ -40,6 +42,44 @@ public class WorldGuardFlagUtilities {
             throw new IllegalArgumentException("Unsupported flag type " + type.getName());
         }
         return wrappedFlag;
+    }
+
+    // Used when the flag's type is not known, so it has to be derived from a sample value's class
+    public IWrappedFlag<?> wrapFixType(Flag<?> flag, Class<?> type) {
+        if (StateFlag.State.class.isAssignableFrom(type)) {
+            // StateFlag
+            type = WrappedState.class;
+        } else if (com.sk89q.worldedit.Location.class.isAssignableFrom(type)) {
+            // LocationFlag
+            type = org.bukkit.Location.class;
+        } else if (com.sk89q.worldedit.Vector.class.isAssignableFrom(type)) {
+            // VectorFlag
+            type = Vector.class;
+        }
+
+        return wrap(flag, type);
+    }
+
+    public Vector adaptVector(com.sk89q.worldedit.Vector vector) {
+        return new Vector(vector.getX(), vector.getY(), vector.getZ());
+    }
+
+    public com.sk89q.worldedit.Vector adaptVector(Vector vector) {
+        return new com.sk89q.worldedit.Vector(vector.getX(), vector.getY(), vector.getZ());
+    }
+
+    public Location adaptLocation(com.sk89q.worldedit.Location location) {
+        com.sk89q.worldedit.Vector pos = location.getPosition();
+        World world = location.getWorld() instanceof BukkitWorld
+                ? ((BukkitWorld) location.getWorld()).getWorld()
+                : Bukkit.getWorld(location.getWorld().getName());
+
+        return new Location(world, pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    public com.sk89q.worldedit.Location adaptLocation(Location location) {
+        return new com.sk89q.worldedit.Location(new BukkitWorld(location.getWorld()),
+                new com.sk89q.worldedit.Vector(location.getX(), location.getY(), location.getZ()));
     }
 
 }

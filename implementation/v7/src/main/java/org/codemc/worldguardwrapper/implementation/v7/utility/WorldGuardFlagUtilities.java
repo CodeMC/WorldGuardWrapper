@@ -1,11 +1,11 @@
 package org.codemc.worldguardwrapper.implementation.v7.utility;
 
-import java.util.Vector;
-
+import com.sk89q.worldedit.math.Vector3;
 import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 
 import org.bukkit.Location;
+import org.bukkit.util.Vector;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 import org.codemc.worldguardwrapper.flag.WrappedState;
 import org.codemc.worldguardwrapper.implementation.v7.flag.WrappedPrimitiveFlag;
@@ -40,6 +40,30 @@ public class WorldGuardFlagUtilities {
             throw new IllegalArgumentException("Unsupported flag type " + type.getName());
         }
         return wrappedFlag;
+    }
+
+    // Used when the flag's type is not known, so it has to be derived from a sample value's class
+    public IWrappedFlag<?> wrapFixType(Flag<?> flag, Class<?> type) {
+        if (StateFlag.State.class.isAssignableFrom(type)) {
+            // StateFlag
+            type = WrappedState.class;
+        } else if (com.sk89q.worldedit.util.Location.class.isAssignableFrom(type)) {
+            // LocationFlag
+            type = org.bukkit.Location.class;
+        } else if (Vector3.class.isAssignableFrom(type)) {
+            // VectorFlag
+            type = Vector.class;
+        }
+
+        return wrap(flag, type);
+    }
+
+    public Vector adaptVector(Vector3 vector) {
+        return new Vector(vector.getX(), vector.getY(), vector.getZ());
+    }
+
+    public Vector3 adaptVector(Vector vector) {
+        return Vector3.at(vector.getX(), vector.getY(), vector.getZ());
     }
 
 }

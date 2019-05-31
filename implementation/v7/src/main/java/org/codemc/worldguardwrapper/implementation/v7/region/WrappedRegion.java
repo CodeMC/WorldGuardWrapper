@@ -79,9 +79,11 @@ public class WrappedRegion implements IWrappedRegion {
         Map<IWrappedFlag<?>, Object> result = new HashMap<>();
         handle.getFlags().forEach((flag, value) -> {
             if (value != null) {
-                IWrappedFlag<?> wrappedFlag = WorldGuardFlagUtilities.wrap(flag, value.getClass());
-                Optional<?> wrappedValue = ((AbstractWrappedFlag<?>) wrappedFlag).fromWGValue(value);
-                wrappedValue.ifPresent(val -> result.put(wrappedFlag, val));
+                try {
+                    IWrappedFlag<?> wrappedFlag = WorldGuardFlagUtilities.wrapFixType(flag, value.getClass());
+                    Optional<?> wrappedValue = ((AbstractWrappedFlag<?>) wrappedFlag).fromWGValue(value);
+                    wrappedValue.ifPresent(val -> result.put(wrappedFlag, val));
+                } catch (IllegalArgumentException ignored) {/* Unsupported flag type */}
             }
         });
         return result;
