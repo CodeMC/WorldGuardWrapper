@@ -2,6 +2,7 @@ package org.codemc.worldguardwrapper.implementation.v6.region;
 
 import com.sk89q.worldedit.BlockVector;
 import com.sk89q.worldguard.protection.flags.Flag;
+import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,9 +31,8 @@ public class WrappedRegion implements IWrappedRegion {
 
     @Override
     public ISelection getSelection() {
-        if (handle instanceof IPolygonalSelection) {
+        if (handle instanceof ProtectedPolygonalRegion) {
             return new IPolygonalSelection() {
-
                 @Override
                 public Set<Location> getPoints() {
                     return handle.getPoints().stream()
@@ -43,17 +43,17 @@ public class WrappedRegion implements IWrappedRegion {
 
                 @Override
                 public int getMinimumY() {
-                    return ((IPolygonalSelection) handle).getMinimumY();
+                    return handle.getMinimumPoint().getBlockY();
                 }
 
                 @Override
                 public int getMaximumY() {
-                    return ((IPolygonalSelection) handle).getMaximumY();
+                    return handle.getMaximumPoint().getBlockY();
                 }
             };
         }
-        return new ICuboidSelection() {
 
+        return new ICuboidSelection() {
             @Override
             public Location getMinimumPoint() {
                 return WorldGuardVectorUtilities.fromBlockVector(world, handle.getMinimumPoint());
