@@ -5,7 +5,6 @@ import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import com.sk89q.worldguard.protection.flags.Flag;
-import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
@@ -16,14 +15,11 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.Vector;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
-import org.codemc.worldguardwrapper.flag.WrappedState;
 import org.codemc.worldguardwrapper.implementation.IWorldGuardImplementation;
 import org.codemc.worldguardwrapper.implementation.legacy.flag.AbstractWrappedFlag;
-import org.codemc.worldguardwrapper.implementation.legacy.flag.WrappedPrimitiveFlag;
-import org.codemc.worldguardwrapper.implementation.legacy.flag.WrappedStatusFlag;
 import org.codemc.worldguardwrapper.implementation.legacy.region.WrappedRegion;
+import org.codemc.worldguardwrapper.implementation.legacy.utility.WorldGuardFlagUtilities;
 import org.codemc.worldguardwrapper.implementation.legacy.utility.WorldGuardVectorUtilities;
 import org.codemc.worldguardwrapper.region.IWrappedRegion;
 
@@ -57,32 +53,6 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
                 .orElse(null), flag));
     }
 
-    // TODO: find a better way to define wrapper mappings and register mappings
-    @SuppressWarnings("unchecked")
-    private <T> IWrappedFlag<T> wrap(Flag<?> flag, Class<T> type) {
-        final IWrappedFlag<T> wrappedFlag;
-        if (type.equals(WrappedState.class)) {
-            wrappedFlag = (IWrappedFlag<T>) new WrappedStatusFlag((Flag<StateFlag.State>) flag);
-        } else if (type.equals(Boolean.class) || type.equals(boolean.class)) {
-            wrappedFlag = new WrappedPrimitiveFlag(flag);
-        } else if (type.equals(Double.class) || type.equals(double.class)) {
-            wrappedFlag = new WrappedPrimitiveFlag(flag);
-        } else if (type.equals(Enum.class)) {
-            wrappedFlag = new WrappedPrimitiveFlag(flag);
-        } else if (type.equals(Integer.class) || type.equals(int.class)) {
-            wrappedFlag = new WrappedPrimitiveFlag(flag);
-        } else if (type.equals(Location.class)) {
-            wrappedFlag = new WrappedPrimitiveFlag(flag);
-        } else if (type.equals(String.class)) {
-            wrappedFlag = new WrappedPrimitiveFlag(flag);
-        } else if (type.equals(Vector.class)) {
-            wrappedFlag = new WrappedPrimitiveFlag(flag);
-        } else {
-            throw new IllegalArgumentException("Unsupported flag type " + type.getName());
-        }
-        return wrappedFlag;
-    }
-
     @Override
     public JavaPlugin getWorldGuardPlugin() {
         return WorldGuardPlugin.inst();
@@ -97,7 +67,7 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     public <T> Optional<IWrappedFlag<T>> getFlag(String name, Class<T> type) {
         for (Flag<?> currentFlag : DefaultFlag.getFlags()) {
             if (currentFlag.getName().equalsIgnoreCase(name)) {
-                return Optional.of(wrap(currentFlag, type));
+                return Optional.of(WorldGuardFlagUtilities.wrap(currentFlag, type));
             }
         }
         return Optional.empty();

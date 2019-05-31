@@ -9,6 +9,7 @@ import lombok.Getter;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
+import org.codemc.worldguardwrapper.implementation.legacy.utility.WorldGuardFlagUtilities;
 import org.codemc.worldguardwrapper.implementation.legacy.utility.WorldGuardVectorUtilities;
 import org.codemc.worldguardwrapper.implementation.legacy.flag.AbstractWrappedFlag;
 import org.codemc.worldguardwrapper.region.IWrappedDomain;
@@ -17,6 +18,8 @@ import org.codemc.worldguardwrapper.selection.ICuboidSelection;
 import org.codemc.worldguardwrapper.selection.IPolygonalSelection;
 import org.codemc.worldguardwrapper.selection.ISelection;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -69,6 +72,19 @@ public class WrappedRegion implements IWrappedRegion {
     @Override
     public String getId() {
         return handle.getId();
+    }
+
+    @Override
+    public Map<IWrappedFlag<?>, Object> getFlags() {
+        Map<IWrappedFlag<?>, Object> result = new HashMap<>();
+        handle.getFlags().forEach((flag, value) -> {
+            if (value != null) {
+                IWrappedFlag<?> wrappedFlag = WorldGuardFlagUtilities.wrap(flag, value.getClass());
+                Optional<?> wrappedValue = ((AbstractWrappedFlag<?>) wrappedFlag).fromWGValue(value);
+                wrappedValue.ifPresent(val -> result.put(wrappedFlag, val));
+            }
+        });
+        return result;
     }
 
     @SuppressWarnings("unchecked")

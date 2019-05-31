@@ -25,9 +25,8 @@ import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 import org.codemc.worldguardwrapper.flag.WrappedState;
 import org.codemc.worldguardwrapper.implementation.IWorldGuardImplementation;
 import org.codemc.worldguardwrapper.implementation.v7.flag.AbstractWrappedFlag;
-import org.codemc.worldguardwrapper.implementation.v7.flag.WrappedPrimitiveFlag;
-import org.codemc.worldguardwrapper.implementation.v7.flag.WrappedStatusFlag;
 import org.codemc.worldguardwrapper.implementation.v7.region.WrappedRegion;
+import org.codemc.worldguardwrapper.implementation.v7.utility.WorldGuardFlagUtilities;
 import org.codemc.worldguardwrapper.region.IWrappedRegion;
 
 import java.util.*;
@@ -62,32 +61,6 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
                 .orElse(null), flag));
     }
 
-    // TODO: find a better way to define wrapper mappings and register mappings
-    @SuppressWarnings("unchecked")
-    private <T> IWrappedFlag<T> wrap(Flag<?> flag, Class<T> type) {
-        final IWrappedFlag<T> wrappedFlag;
-        if (type.equals(WrappedState.class)) {
-            wrappedFlag = (IWrappedFlag<T>) new WrappedStatusFlag((Flag<StateFlag.State>) flag);
-        } else if (type.equals(Boolean.class) || type.equals(boolean.class)) {
-            wrappedFlag = new WrappedPrimitiveFlag(flag);
-        } else if (type.equals(Double.class) || type.equals(double.class)) {
-            wrappedFlag = new WrappedPrimitiveFlag(flag);
-        } else if (type.equals(Enum.class)) {
-            wrappedFlag = new WrappedPrimitiveFlag(flag);
-        } else if (type.equals(Integer.class) || type.equals(int.class)) {
-            wrappedFlag = new WrappedPrimitiveFlag(flag);
-        } else if (type.equals(Location.class)) {
-            wrappedFlag = new WrappedPrimitiveFlag(flag);
-        } else if (type.equals(String.class)) {
-            wrappedFlag = new WrappedPrimitiveFlag(flag);
-        } else if (type.equals(Vector.class)) {
-            wrappedFlag = new WrappedPrimitiveFlag(flag);
-        } else {
-            throw new IllegalArgumentException("Unsupported flag type " + type.getName());
-        }
-        return wrappedFlag;
-    }
-
     @Override
     public JavaPlugin getWorldGuardPlugin() {
         return WorldGuardPlugin.inst();
@@ -101,7 +74,7 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     @Override
     public <T> Optional<IWrappedFlag<T>> getFlag(String name, Class<T> type) {
         return Optional.ofNullable(flagRegistry.get(name))
-                .map(flag -> wrap(flag, type));
+                .map(flag -> WorldGuardFlagUtilities.wrap(flag, type));
     }
 
     @Override
@@ -135,7 +108,7 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
         }
         try {
             flagRegistry.register(flag);
-            return Optional.of(wrap(flag, type));
+            return Optional.of(WorldGuardFlagUtilities.wrap(flag, type));
         } catch (FlagConflictException ignored) {
         }
         return Optional.empty();
