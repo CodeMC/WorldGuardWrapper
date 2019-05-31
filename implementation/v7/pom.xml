@@ -78,6 +78,10 @@
                     <artifactId>paperlib</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>com.destroystokyo.paper</groupId>
+                    <artifactId>paper-api</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.bstats.bStats-Metrics</groupId>
                     <artifactId>bstats-bukkit</artifactId>
                 </exclusion>
