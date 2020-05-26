@@ -1,5 +1,6 @@
 package org.codemc.worldguardwrapper.implementation.v6.utility;
 
+import com.google.common.collect.Maps;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
@@ -9,10 +10,13 @@ import org.bukkit.World;
 import org.bukkit.util.Vector;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 import org.codemc.worldguardwrapper.flag.WrappedState;
+import org.codemc.worldguardwrapper.implementation.v6.flag.AbstractWrappedFlag;
 import org.codemc.worldguardwrapper.implementation.v6.flag.WrappedPrimitiveFlag;
 import org.codemc.worldguardwrapper.implementation.v6.flag.WrappedStatusFlag;
 
 import lombok.experimental.UtilityClass;
+
+import java.util.Map;
 
 @UtilityClass
 public class WorldGuardFlagUtilities {
@@ -57,6 +61,12 @@ public class WorldGuardFlagUtilities {
         }
 
         return wrap(flag, type);
+    }
+
+    public Map.Entry<IWrappedFlag<?>, Object> wrap(Flag<?> flag, Object value) {
+        IWrappedFlag<?> wrappedFlag = wrapFixType(flag, value.getClass());
+        Object wrappedValue = ((AbstractWrappedFlag<?>) wrappedFlag).fromWGValue(value).get(); // value is non-null
+        return Maps.immutableEntry(wrappedFlag, wrappedValue);
     }
 
     public Vector adaptVector(com.sk89q.worldedit.Vector vector) {

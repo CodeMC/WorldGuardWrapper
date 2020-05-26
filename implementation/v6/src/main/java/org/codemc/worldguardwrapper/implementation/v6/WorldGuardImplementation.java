@@ -1,5 +1,6 @@
 package org.codemc.worldguardwrapper.implementation.v6;
 
+import com.google.common.collect.Maps;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
@@ -77,6 +78,38 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     public <T> Optional<T> queryFlag(Player player, Location location, IWrappedFlag<T> flag) {
         AbstractWrappedFlag<T> wrappedFlag = (AbstractWrappedFlag<T>) flag;
         return queryValue(player, location, wrappedFlag.getHandle()).flatMap(value -> wrappedFlag.fromWGValue(value));
+    }
+
+    @Override
+    public Map<IWrappedFlag<?>, Object> queryApplicableFlags(Player player, Location location) {
+        ApplicableRegionSet applicableSet = getApplicableRegions(location).orElse(null);
+        if (applicableSet == null) {
+            return Collections.emptyMap();
+        }
+
+        LocalPlayer localPlayer = wrapPlayer(player).orElse(null);
+        Map<IWrappedFlag<?>, Object> flags = new HashMap<>();
+        Set<String> seen = new HashSet<>();
+
+        for (ProtectedRegion region : applicableSet.getRegions()) {
+            for (Flag<?> flag : region.getFlags().keySet()) {
+                if (seen.add(flag.getName())) {
+                    Object value = applicableSet.queryValue(localPlayer, flag);
+                    if (value == null) {
+                        continue;
+                    }
+
+                    try {
+                        Map.Entry<IWrappedFlag<?>, Object> wrapped = WorldGuardFlagUtilities.wrap(flag, value);
+                        flags.put(wrapped.getKey(), wrapped.getValue());
+                    } catch (IllegalArgumentException e) {
+                        return null; // Unsupported flag type
+                    }
+                }
+            }
+        }
+
+        return flags;
     }
 
     @SuppressWarnings("unchecked")
