@@ -40,6 +40,15 @@ public interface IWorldGuardImplementation {
     <T> Optional<T> queryFlag(Player player, @NonNull Location location, @NonNull IWrappedFlag<T> flag);
 
     /**
+     * Queries all applicable flags for a given player at a given location.
+     *
+     * @param player   The player
+     * @param location The location
+     * @return The flags
+     */
+    Map<IWrappedFlag<?>, Object> queryApplicableFlags(Player player, Location location);
+
+    /**
      * Returns the flag with the given name.
      *
      * @param name The flag name
