@@ -103,7 +103,7 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
                         Map.Entry<IWrappedFlag<?>, Object> wrapped = WorldGuardFlagUtilities.wrap(flag, value);
                         flags.put(wrapped.getKey(), wrapped.getValue());
                     } catch (IllegalArgumentException e) {
-                        return null; // Unsupported flag type
+                        continue; // Unsupported flag type
                     }
                 }
             }
