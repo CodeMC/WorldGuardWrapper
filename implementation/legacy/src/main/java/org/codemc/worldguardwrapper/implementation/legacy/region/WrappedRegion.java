@@ -2,6 +2,7 @@ package org.codemc.worldguardwrapper.implementation.legacy.region;
 
 import com.sk89q.worldedit.BlockVector;
 import com.sk89q.worldguard.protection.flags.Flag;
+import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import lombok.AllArgsConstructor;
@@ -34,7 +35,19 @@ public class WrappedRegion implements IWrappedRegion {
 
     @Override
     public ISelection getSelection() {
-        if (handle instanceof ProtectedPolygonalRegion) {
+        if (handle instanceof ProtectedCuboidRegion) {
+            return new ICuboidSelection() {
+                @Override
+                public Location getMinimumPoint() {
+                    return WorldGuardVectorUtilities.fromBlockVector(world, handle.getMinimumPoint());
+                }
+
+                @Override
+                public Location getMaximumPoint() {
+                    return WorldGuardVectorUtilities.fromBlockVector(world, handle.getMaximumPoint());
+                }
+            };
+        } else if (handle instanceof ProtectedPolygonalRegion) {
             return new IPolygonalSelection() {
                 @Override
                 public Set<Location> getPoints() {
@@ -54,19 +67,9 @@ public class WrappedRegion implements IWrappedRegion {
                     return handle.getMaximumPoint().getBlockY();
                 }
             };
+        } else {
+            throw new UnsupportedOperationException("Unsupported " + handle.getClass().getSimpleName() + " region!");
         }
-
-        return new ICuboidSelection() {
-            @Override
-            public Location getMinimumPoint() {
-                return WorldGuardVectorUtilities.fromBlockVector(world, handle.getMinimumPoint());
-            }
-
-            @Override
-            public Location getMaximumPoint() {
-                return WorldGuardVectorUtilities.fromBlockVector(world, handle.getMaximumPoint());
-            }
-        };
     }
 
     @Override

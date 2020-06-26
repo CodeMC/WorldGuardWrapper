@@ -154,8 +154,9 @@ public interface IWorldGuardImplementation {
         } else if (selection instanceof IPolygonalSelection) {
             IPolygonalSelection sel = (IPolygonalSelection) selection;
             return addRegion(id, new ArrayList<>(sel.getPoints()), sel.getMinimumY(), sel.getMaximumY());
+        } else {
+            throw new UnsupportedOperationException("Unknown " + selection.getClass().getSimpleName() + " selection type!");
         }
-        return Optional.empty();
     }
 
     /**
@@ -166,5 +167,13 @@ public interface IWorldGuardImplementation {
      * @return A list of removed regions where the first entry is the region specified by {@code id}
      */
     Optional<Set<IWrappedRegion>> removeRegion(@NonNull World world, @NonNull String id);
+
+    /**
+     * Returns the current selection of the given player.
+     *
+     * @param player The player
+     * @return The current player's selection
+     */
+    Optional<ISelection> getPlayerSelection(@NonNull Player player);
 
 }

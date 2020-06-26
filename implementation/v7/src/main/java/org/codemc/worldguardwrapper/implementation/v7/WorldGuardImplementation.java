@@ -1,9 +1,14 @@
 package org.codemc.worldguardwrapper.implementation.v7;
 
-import com.google.common.collect.Maps;
+import com.sk89q.minecraft.util.commands.CommandException;
+import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
+import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.math.BlockVector2;
+import com.sk89q.worldedit.regions.CuboidRegion;
+import com.sk89q.worldedit.regions.Polygonal2DRegion;
+import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
@@ -15,7 +20,6 @@ import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -29,19 +33,33 @@ import org.codemc.worldguardwrapper.implementation.v7.flag.AbstractWrappedFlag;
 import org.codemc.worldguardwrapper.implementation.v7.region.WrappedRegion;
 import org.codemc.worldguardwrapper.implementation.v7.utility.WorldGuardFlagUtilities;
 import org.codemc.worldguardwrapper.region.IWrappedRegion;
+import org.codemc.worldguardwrapper.selection.ICuboidSelection;
+import org.codemc.worldguardwrapper.selection.IPolygonalSelection;
+import org.codemc.worldguardwrapper.selection.ISelection;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-@NoArgsConstructor
 public class WorldGuardImplementation implements IWorldGuardImplementation {
 
-    private final WorldGuard core = WorldGuard.getInstance();
-    private final FlagRegistry flagRegistry = core.getFlagRegistry();
-    private final WorldGuardPlugin plugin = WorldGuardPlugin.inst();
+    private final WorldGuard core;
+    private final FlagRegistry flagRegistry;
+    private final WorldGuardPlugin worldGuardPlugin;
+    private final WorldEditPlugin worldEditPlugin;
+
+    public WorldGuardImplementation() {
+        core = WorldGuard.getInstance();
+        flagRegistry = core.getFlagRegistry();
+        worldGuardPlugin = WorldGuardPlugin.inst();
+        try {
+            worldEditPlugin = worldGuardPlugin.getWorldEdit();
+        } catch (CommandException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private Optional<LocalPlayer> wrapPlayer(Player player) {
-        return Optional.ofNullable(player).map(bukkitPlayer -> plugin.wrapPlayer(player));
+        return Optional.ofNullable(player).map(bukkitPlayer -> worldGuardPlugin.wrapPlayer(player));
     }
 
     private Optional<RegionManager> getWorldManager(@NonNull World world) {
@@ -220,5 +238,57 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
         Optional<Set<ProtectedRegion>> set = getWorldManager(world).map(manager -> manager.removeRegion(id));
         return set.map(protectedRegions -> protectedRegions.stream()
                 .map(region -> new WrappedRegion(world, region)).collect(Collectors.toSet()));
+    }
+
+    @Override
+    public Optional<ISelection> getPlayerSelection(@NonNull Player player) {
+        Region region;
+        try {
+            region = worldEditPlugin.getSession(player).getSelection(BukkitAdapter.adapt(player.getWorld()));
+        } catch (IncompleteRegionException e) {
+            region = null;
+        }
+        return Optional.ofNullable(region)
+                .map(selection -> {
+                    World world = Optional.ofNullable(selection.getWorld()).map(BukkitAdapter::adapt).orElse(null);
+                    if (world == null) {
+                        return null;
+                    }
+                    if (selection instanceof CuboidRegion) {
+                        return new ICuboidSelection() {
+                            @Override
+                            public Location getMinimumPoint() {
+                                return BukkitAdapter.adapt(world, selection.getMinimumPoint());
+                            }
+
+                            @Override
+                            public Location getMaximumPoint() {
+                                return BukkitAdapter.adapt(world, selection.getMaximumPoint());
+                            }
+                        };
+                    } else if (selection instanceof Polygonal2DRegion) {
+                        return new IPolygonalSelection() {
+                            @Override
+                            public Set<Location> getPoints() {
+                                return ((Polygonal2DRegion) selection).getPoints().stream()
+                                        .map(BlockVector2::toBlockVector3)
+                                        .map(vector -> BukkitAdapter.adapt(world, vector))
+                                        .collect(Collectors.toSet());
+                            }
+
+                            @Override
+                            public int getMinimumY() {
+                                return selection.getMinimumPoint().getBlockY();
+                            }
+
+                            @Override
+                            public int getMaximumY() {
+                                return selection.getMaximumPoint().getBlockY();
+                            }
+                        };
+                    } else {
+                        throw new UnsupportedOperationException("Unsupported " + selection.getClass().getSimpleName() + " selection!");
+                    }
+                });
     }
 }

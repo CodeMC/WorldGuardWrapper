@@ -3,6 +3,7 @@ package org.codemc.worldguardwrapper.implementation.v7.region;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector2;
 import com.sk89q.worldguard.protection.flags.Flag;
+import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import lombok.AllArgsConstructor;
@@ -18,11 +19,7 @@ import org.codemc.worldguardwrapper.selection.ICuboidSelection;
 import org.codemc.worldguardwrapper.selection.IPolygonalSelection;
 import org.codemc.worldguardwrapper.selection.ISelection;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
@@ -34,7 +31,19 @@ public class WrappedRegion implements IWrappedRegion {
 
     @Override
     public ISelection getSelection() {
-        if (handle instanceof ProtectedPolygonalRegion) {
+        if (handle instanceof ProtectedCuboidRegion) {
+            return new ICuboidSelection() {
+                @Override
+                public Location getMinimumPoint() {
+                    return BukkitAdapter.adapt(world, handle.getMinimumPoint());
+                }
+
+                @Override
+                public Location getMaximumPoint() {
+                    return BukkitAdapter.adapt(world, handle.getMaximumPoint());
+                }
+            };
+        } else if (handle instanceof ProtectedPolygonalRegion) {
             return new IPolygonalSelection() {
                 @Override
                 public Set<Location> getPoints() {
@@ -54,19 +63,9 @@ public class WrappedRegion implements IWrappedRegion {
                     return handle.getMaximumPoint().getBlockY();
                 }
             };
+        } else {
+            throw new UnsupportedOperationException("Unsupported " + handle.getClass().getSimpleName() + " region!");
         }
-
-        return new ICuboidSelection() {
-            @Override
-            public Location getMinimumPoint() {
-                return BukkitAdapter.adapt(world, handle.getMinimumPoint());
-            }
-
-            @Override
-            public Location getMaximumPoint() {
-                return BukkitAdapter.adapt(world, handle.getMaximumPoint());
-            }
-        };
     }
 
     @Override
