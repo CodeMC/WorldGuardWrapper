@@ -99,7 +99,7 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     @Override
     public <T> Optional<T> queryFlag(Player player, Location location, IWrappedFlag<T> flag) {
         AbstractWrappedFlag<T> wrappedFlag = (AbstractWrappedFlag<T>) flag;
-        return queryValue(player, location, wrappedFlag.getHandle()).flatMap(value -> wrappedFlag.fromWGValue(value));
+        return queryValue(player, location, wrappedFlag.getHandle()).flatMap(wrappedFlag::fromWGValue);
     }
 
     @Override
@@ -124,8 +124,8 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
                     try {
                         Map.Entry<IWrappedFlag<?>, Object> wrapped = WorldGuardFlagUtilities.wrap(flag, value);
                         flags.put(wrapped.getKey(), wrapped.getValue());
-                    } catch (IllegalArgumentException e) {
-                        continue; // Unsupported flag type
+                    } catch (IllegalArgumentException ignored) {
+                        // Unsupported flag type
                     }
                 }
             }

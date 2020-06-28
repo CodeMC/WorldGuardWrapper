@@ -3,6 +3,7 @@ package org.codemc.worldguardwrapper.implementation.legacy.utility;
 import com.google.common.collect.Maps;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldguard.protection.flags.Flag;
+import com.sk89q.worldguard.protection.flags.RegionGroup;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 
 import org.bukkit.Bukkit;
@@ -10,9 +11,11 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.util.Vector;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
+import org.codemc.worldguardwrapper.flag.WrappedRegionGroup;
 import org.codemc.worldguardwrapper.flag.WrappedState;
 import org.codemc.worldguardwrapper.implementation.legacy.flag.AbstractWrappedFlag;
 import org.codemc.worldguardwrapper.implementation.legacy.flag.WrappedPrimitiveFlag;
+import org.codemc.worldguardwrapper.implementation.legacy.flag.WrappedRegionGroupFlag;
 import org.codemc.worldguardwrapper.implementation.legacy.flag.WrappedStatusFlag;
 
 import lombok.experimental.UtilityClass;
@@ -28,6 +31,8 @@ public class WorldGuardFlagUtilities {
         final IWrappedFlag<T> wrappedFlag;
         if (type.equals(WrappedState.class)) {
             wrappedFlag = (IWrappedFlag<T>) new WrappedStatusFlag((Flag<StateFlag.State>) flag);
+        } else if (type.equals(WrappedRegionGroup.class)) {
+            wrappedFlag = (IWrappedFlag<T>) new WrappedRegionGroupFlag((Flag<RegionGroup>) flag);
         } else if (type.equals(Boolean.class) || type.equals(boolean.class)) {
             wrappedFlag = new WrappedPrimitiveFlag(flag);
         } else if (type.equals(Double.class) || type.equals(double.class)) {
