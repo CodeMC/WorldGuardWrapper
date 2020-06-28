@@ -8,6 +8,4 @@ public interface IWrappedFlag<T> {
 
     Optional<T> getDefaultValue();
 
-    IWrappedRegionGroupFlag getRegionGroupFlag();
-
 }

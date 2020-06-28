@@ -4,6 +4,7 @@ import com.sk89q.worldguard.protection.flags.Flag;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
+import org.codemc.worldguardwrapper.flag.IWrappedRegionGroupFlag;
 
 import java.util.Optional;
 
@@ -26,5 +27,4 @@ public abstract class AbstractWrappedFlag<T> implements IWrappedFlag<T> {
     public Optional<T> getDefaultValue() {
         return fromWGValue(handle.getDefault());
     }
-
 }

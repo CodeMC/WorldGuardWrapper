@@ -4,6 +4,7 @@ import com.sk89q.worldguard.protection.flags.Flag;
 
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
+import org.codemc.worldguardwrapper.flag.IWrappedRegionGroupFlag;
 import org.codemc.worldguardwrapper.implementation.legacy.utility.WorldGuardFlagUtilities;
 
 import java.util.Optional;
@@ -34,5 +35,4 @@ public class WrappedPrimitiveFlag<T> extends AbstractWrappedFlag<T> {
         }
         return Optional.ofNullable(value);
     }
-
 }
