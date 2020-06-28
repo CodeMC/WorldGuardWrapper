@@ -21,6 +21,8 @@ public interface IWrappedRegion {
 
     int getPriority();
 
+    void setPriority(int priority);
+
     IWrappedDomain getOwners();
 
     IWrappedDomain getMembers();
