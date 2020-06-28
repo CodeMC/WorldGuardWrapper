@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 import org.codemc.worldguardwrapper.flag.IWrappedRegionGroupFlag;
+import org.codemc.worldguardwrapper.flag.WrappedRegionGroup;
+import org.codemc.worldguardwrapper.implementation.legacy.utility.WorldGuardFlagUtilities;
 
 import java.util.Optional;
 
@@ -26,5 +28,10 @@ public abstract class AbstractWrappedFlag<T> implements IWrappedFlag<T> {
     @Override
     public Optional<T> getDefaultValue() {
         return fromWGValue(handle.getDefault());
+    }
+
+    @Override
+    public IWrappedFlag<WrappedRegionGroup> getRegionGroupFlag() {
+        return WorldGuardFlagUtilities.wrap(handle.getRegionGroupFlag(), WrappedRegionGroup.class);
     }
 }
