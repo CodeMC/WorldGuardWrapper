@@ -15,11 +15,11 @@ public class WrappedRegionGroupFlag extends AbstractWrappedFlag<WrappedRegionGro
 
     @Override
     public Optional<WrappedRegionGroup> fromWGValue(Object value) {
-        return Optional.of(Enum.valueOf(WrappedRegionGroup.class, value.toString()));
+        return Optional.of(WrappedRegionGroup.valueOf(value.toString()));
     }
 
     @Override
     public Optional<Object> fromWrapperValue(WrappedRegionGroup value) {
-        return Optional.of(Enum.valueOf(RegionGroup.class, value.toString()));
+        return Optional.of(RegionGroup.valueOf(value.toString()));
     }
 }
