@@ -12,7 +12,6 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 import org.codemc.worldguardwrapper.implementation.v7.flag.AbstractWrappedFlag;
-import org.codemc.worldguardwrapper.implementation.v7.flag.WrappedStatusFlag;
 import org.codemc.worldguardwrapper.implementation.v7.utility.WorldGuardFlagUtilities;
 import org.codemc.worldguardwrapper.region.IWrappedDomain;
 import org.codemc.worldguardwrapper.region.IWrappedRegion;
