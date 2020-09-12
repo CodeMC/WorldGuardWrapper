@@ -6,7 +6,7 @@
 
     <groupId>org.codemc.worldguardwrapper</groupId>
     <artifactId>worldguardwrapper-parent</artifactId>
-    <version>1.2.1-DEV</version>
+    <version>1.2.1-SNAP</version>
     <packaging>pom</packaging>
 
     <modules>
