@@ -23,10 +23,13 @@ public interface IWrappedRegion {
 
     void setPriority(int priority);
 
+    void setParent(IWrappedRegion parent);
+
     IWrappedDomain getOwners();
 
     IWrappedDomain getMembers();
 
     boolean contains(Location location);
 
+    Object convertToRegion();
 }

@@ -117,6 +117,14 @@ public class WrappedRegion implements IWrappedRegion {
     }
 
     @Override
+    public void setParent(IWrappedRegion parent) {
+        ProtectedRegion parentRegion = (ProtectedRegion) parent.convertToRegion();
+        try {
+            handle.setParent(parentRegion);
+        } catch (ProtectedRegion.CircularInheritanceException ignored) {/* Circular inheritance is detected */}
+    }
+
+    @Override
     public IWrappedDomain getOwners() {
         return new IWrappedDomain() {
             @Override
@@ -189,6 +197,11 @@ public class WrappedRegion implements IWrappedRegion {
     @Override
     public boolean contains(Location location) {
         return handle.contains(WorldGuardVectorUtilities.toBlockVector(location));
+    }
+
+    @Override
+    public ProtectedRegion convertToRegion() {
+        return handle;
     }
 
 }
