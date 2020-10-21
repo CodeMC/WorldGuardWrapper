@@ -112,6 +112,11 @@ public class WrappedRegion implements IWrappedRegion {
     }
 
     @Override
+    public void setPriority(int priority) {
+        handle.setPriority(priority);
+    }
+
+    @Override
     public IWrappedDomain getOwners() {
         return new IWrappedDomain() {
             @Override
