@@ -1,5 +1,8 @@
 package org.codemc.worldguardwrapper.implementation.v6;
 
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterators;
 import com.sk89q.minecraft.util.commands.CommandException;
 import com.sk89q.worldedit.BlockVector;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
@@ -15,25 +18,33 @@ import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import com.sk89q.worldguard.session.MoveType;
+import com.sk89q.worldguard.session.Session;
+import com.sk89q.worldguard.session.handler.Handler;
 import lombok.NonNull;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 import org.codemc.worldguardwrapper.flag.WrappedState;
+import org.codemc.worldguardwrapper.handler.IHandler;
 import org.codemc.worldguardwrapper.implementation.IWorldGuardImplementation;
 import org.codemc.worldguardwrapper.implementation.v6.flag.AbstractWrappedFlag;
 import org.codemc.worldguardwrapper.implementation.v6.region.WrappedRegion;
 import org.codemc.worldguardwrapper.implementation.v6.utility.WorldGuardFlagUtilities;
 import org.codemc.worldguardwrapper.implementation.v6.utility.WorldGuardVectorUtilities;
 import org.codemc.worldguardwrapper.region.IWrappedRegion;
+import org.codemc.worldguardwrapper.region.IWrappedRegionSet;
 import org.codemc.worldguardwrapper.selection.ICuboidSelection;
 import org.codemc.worldguardwrapper.selection.IPolygonalSelection;
 import org.codemc.worldguardwrapper.selection.ISelection;
 
+import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class WorldGuardImplementation implements IWorldGuardImplementation {
@@ -52,8 +63,9 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
         flagRegistry = worldGuardPlugin.getFlagRegistry();
     }
 
-    private Optional<LocalPlayer> wrapPlayer(Player player) {
-        return Optional.ofNullable(player).map(bukkitPlayer -> worldGuardPlugin.wrapPlayer(player));
+    private Optional<LocalPlayer> wrapPlayer(OfflinePlayer player) {
+        return Optional.ofNullable(player).map(bukkitPlayer -> bukkitPlayer.isOnline() ?
+                worldGuardPlugin.wrapPlayer((Player) bukkitPlayer) : worldGuardPlugin.wrapOfflinePlayer(bukkitPlayer));
     }
 
     private Optional<RegionManager> getWorldManager(@NonNull World world) {
@@ -74,6 +86,64 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
                 .orElse(null), flag));
     }
 
+    private IWrappedRegionSet wrapRegionSet(@NonNull World world, @NonNull ApplicableRegionSet regionSet) {
+        return new IWrappedRegionSet() {
+
+            @SuppressWarnings("NullableProblems")
+            @Override
+            public Iterator<IWrappedRegion> iterator() {
+                return Iterators.transform(regionSet.iterator(), region -> new WrappedRegion(world, region));
+            }
+
+            @Override
+            public boolean isVirtual() {
+                return regionSet.isVirtual();
+            }
+
+            @Override
+            public <V> Optional<V> queryValue(OfflinePlayer subject, IWrappedFlag<V> flag) {
+                LocalPlayer subjectHandle = wrapPlayer(subject).orElse(null);
+                AbstractWrappedFlag<V> wrappedFlag = (AbstractWrappedFlag<V>) flag;
+                return Optional.ofNullable(regionSet.queryValue(subjectHandle, wrappedFlag.getHandle()))
+                        .flatMap(wrappedFlag::fromWGValue);
+            }
+
+            @Override
+            public <V> Collection<V> queryAllValues(OfflinePlayer subject, IWrappedFlag<V> flag) {
+                LocalPlayer subjectHandle = wrapPlayer(subject).orElse(null);
+                AbstractWrappedFlag<V> wrappedFlag = (AbstractWrappedFlag<V>) flag;
+                return regionSet.queryAllValues(subjectHandle, wrappedFlag.getHandle()).stream()
+                        .map(wrappedFlag::fromWGValue)
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .collect(Collectors.toList());
+            }
+
+            @Override
+            public boolean isOwnerOfAll(OfflinePlayer player) {
+                LocalPlayer playerHandle = wrapPlayer(player).orElse(null);
+                return regionSet.isOwnerOfAll(playerHandle);
+            }
+
+            @Override
+            public boolean isMemberOfAll(OfflinePlayer player) {
+                LocalPlayer playerHandle = wrapPlayer(player).orElse(null);
+                return regionSet.isMemberOfAll(playerHandle);
+            }
+
+            @Override
+            public int size() {
+                return regionSet.size();
+            }
+
+            @Override
+            public Set<IWrappedRegion> getRegions() {
+                return regionSet.getRegions().stream()
+                        .map(region -> new WrappedRegion(world, region)).collect(Collectors.toSet());
+            }
+        };
+    }
+
     @Override
     public JavaPlugin getWorldGuardPlugin() {
         return WorldGuardPlugin.inst();
@@ -85,6 +155,49 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     }
 
     @Override
+    public void registerHandler(Supplier<IHandler> factory) {
+        worldGuardPlugin.getSessionManager().registerHandler(new Handler.Factory<Handler>() {
+            @Override
+            public Handler create(Session session) {
+                IHandler handler = factory.get();
+                return new Handler(session) {
+                    @Override
+                    public void initialize(Player player, Location current, ApplicableRegionSet set) {
+                        handler.initialize(player, current, wrapRegionSet(current.getWorld(), set));
+                    }
+
+                    @Override
+                    public boolean testMoveTo(Player player, Location from, Location to, ApplicableRegionSet toSet, MoveType moveType) {
+                        return handler.testMoveTo(player, from, to, wrapRegionSet(to.getWorld(), toSet), moveType.name());
+                    }
+
+                    @Override
+                    public boolean onCrossBoundary(Player player, Location from, Location to, ApplicableRegionSet toSet, Set<ProtectedRegion> entered, Set<ProtectedRegion> exited, MoveType moveType) {
+                        Set<IWrappedRegion> mappedEntered = ImmutableSet.copyOf(Collections2.transform(entered, region -> new WrappedRegion(to.getWorld(), region)));
+                        Set<IWrappedRegion> mappedExited = ImmutableSet.copyOf(Collections2.transform(exited, region -> new WrappedRegion(from.getWorld(), region)));
+                        return handler.onCrossBoundary(player, from, to, wrapRegionSet(to.getWorld(), toSet), mappedEntered, mappedExited, moveType.name());
+                    }
+
+                    @Override
+                    public void tick(Player player, ApplicableRegionSet set) {
+                        handler.tick(player, wrapRegionSet(player.getWorld(), set));
+                    }
+
+                    @Nullable
+                    @Override
+                    public StateFlag.State getInvincibility(Player player) {
+                        WrappedState state = handler.getInvincibility(player);
+                        if (state == null) {
+                            return null;
+                        }
+                        return state == WrappedState.ALLOW ? StateFlag.State.ALLOW : StateFlag.State.DENY;
+                    }
+                };
+            }
+        }, null);
+    }
+
+    @Override
     public <T> Optional<IWrappedFlag<T>> getFlag(String name, Class<T> type) {
         return Optional.ofNullable(flagRegistry.get(name))
                 .map(flag -> WorldGuardFlagUtilities.wrap(flag, type));
@@ -93,7 +206,7 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     @Override
     public <T> Optional<T> queryFlag(Player player, Location location, IWrappedFlag<T> flag) {
         AbstractWrappedFlag<T> wrappedFlag = (AbstractWrappedFlag<T>) flag;
-        return queryValue(player, location, wrappedFlag.getHandle()).flatMap(value -> wrappedFlag.fromWGValue(value));
+        return queryValue(player, location, wrappedFlag.getHandle()).flatMap(wrappedFlag::fromWGValue);
     }
 
     @Override
@@ -119,7 +232,7 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
                         Map.Entry<IWrappedFlag<?>, Object> wrapped = WorldGuardFlagUtilities.wrap(flag, value);
                         flags.put(wrapped.getKey(), wrapped.getValue());
                     } catch (IllegalArgumentException e) {
-                        continue; // Unsupported flag type
+                        // Unsupported flag type
                     }
                 }
             }
@@ -128,7 +241,7 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
         return flags;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public <T> Optional<IWrappedFlag<T>> registerFlag(String name, Class<T> type, T defaultValue) {
         final Flag<?> flag;
@@ -201,6 +314,11 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
 
         regionSet.forEach(region -> set.add(new WrappedRegion(minimum.getWorld(), region)));
         return set;
+    }
+
+    @Override
+    public Optional<IWrappedRegionSet> getRegionSet(@NonNull Location location) {
+        return getApplicableRegions(location).map(regionSet -> wrapRegionSet(location.getWorld(), regionSet));
     }
 
     @Override

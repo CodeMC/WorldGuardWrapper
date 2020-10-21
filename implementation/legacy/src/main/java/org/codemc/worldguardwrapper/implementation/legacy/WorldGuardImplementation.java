@@ -1,5 +1,6 @@
 package org.codemc.worldguardwrapper.implementation.legacy;
 
+import com.google.common.collect.Iterators;
 import com.sk89q.minecraft.util.commands.CommandException;
 import com.sk89q.worldedit.BlockVector;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
@@ -16,21 +17,25 @@ import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import lombok.NonNull;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
+import org.codemc.worldguardwrapper.handler.IHandler;
 import org.codemc.worldguardwrapper.implementation.IWorldGuardImplementation;
 import org.codemc.worldguardwrapper.implementation.legacy.flag.AbstractWrappedFlag;
 import org.codemc.worldguardwrapper.implementation.legacy.region.WrappedRegion;
 import org.codemc.worldguardwrapper.implementation.legacy.utility.WorldGuardFlagUtilities;
 import org.codemc.worldguardwrapper.implementation.legacy.utility.WorldGuardVectorUtilities;
 import org.codemc.worldguardwrapper.region.IWrappedRegion;
+import org.codemc.worldguardwrapper.region.IWrappedRegionSet;
 import org.codemc.worldguardwrapper.selection.ICuboidSelection;
 import org.codemc.worldguardwrapper.selection.IPolygonalSelection;
 import org.codemc.worldguardwrapper.selection.ISelection;
 
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class WorldGuardImplementation implements IWorldGuardImplementation {
@@ -47,8 +52,9 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
         }
     }
 
-    private Optional<LocalPlayer> wrapPlayer(Player player) {
-        return Optional.ofNullable(player).map(bukkitPlayer -> worldGuardPlugin.wrapPlayer(player));
+    private Optional<LocalPlayer> wrapPlayer(OfflinePlayer player) {
+        return Optional.ofNullable(player).map(bukkitPlayer -> bukkitPlayer.isOnline() ?
+                worldGuardPlugin.wrapPlayer((Player) bukkitPlayer) : worldGuardPlugin.wrapOfflinePlayer(bukkitPlayer));
     }
 
     private Optional<RegionManager> getWorldManager(@NonNull World world) {
@@ -69,6 +75,64 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
                 .orElse(null), flag));
     }
 
+    private IWrappedRegionSet wrapRegionSet(@NonNull World world, @NonNull ApplicableRegionSet regionSet) {
+        return new IWrappedRegionSet() {
+
+            @SuppressWarnings("NullableProblems")
+            @Override
+            public Iterator<IWrappedRegion> iterator() {
+                return Iterators.transform(regionSet.iterator(), region -> new WrappedRegion(world, region));
+            }
+
+            @Override
+            public boolean isVirtual() {
+                return regionSet.isVirtual();
+            }
+
+            @Override
+            public <V> Optional<V> queryValue(OfflinePlayer subject, IWrappedFlag<V> flag) {
+                LocalPlayer subjectHandle = wrapPlayer(subject).orElse(null);
+                AbstractWrappedFlag<V> wrappedFlag = (AbstractWrappedFlag<V>) flag;
+                return Optional.ofNullable(regionSet.queryValue(subjectHandle, wrappedFlag.getHandle()))
+                        .flatMap(wrappedFlag::fromWGValue);
+            }
+
+            @Override
+            public <V> Collection<V> queryAllValues(OfflinePlayer subject, IWrappedFlag<V> flag) {
+                LocalPlayer subjectHandle = wrapPlayer(subject).orElse(null);
+                AbstractWrappedFlag<V> wrappedFlag = (AbstractWrappedFlag<V>) flag;
+                return regionSet.queryAllValues(subjectHandle, wrappedFlag.getHandle()).stream()
+                        .map(wrappedFlag::fromWGValue)
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .collect(Collectors.toList());
+            }
+
+            @Override
+            public boolean isOwnerOfAll(OfflinePlayer player) {
+                LocalPlayer playerHandle = wrapPlayer(player).orElse(null);
+                return regionSet.isOwnerOfAll(playerHandle);
+            }
+
+            @Override
+            public boolean isMemberOfAll(OfflinePlayer player) {
+                LocalPlayer playerHandle = wrapPlayer(player).orElse(null);
+                return regionSet.isMemberOfAll(playerHandle);
+            }
+
+            @Override
+            public int size() {
+                return regionSet.size();
+            }
+
+            @Override
+            public Set<IWrappedRegion> getRegions() {
+                return regionSet.getRegions().stream()
+                        .map(region -> new WrappedRegion(world, region)).collect(Collectors.toSet());
+            }
+        };
+    }
+
     @Override
     public JavaPlugin getWorldGuardPlugin() {
         return WorldGuardPlugin.inst();
@@ -77,6 +141,11 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     @Override
     public int getApiVersion() {
         return -6;
+    }
+
+    @Override
+    public void registerHandler(Supplier<IHandler> factory) {
+        throw new UnsupportedOperationException("Custom flag handlers aren't supported in this version of WorldGuard!");
     }
 
     @Override
@@ -92,7 +161,8 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     @Override
     public <T> Optional<T> queryFlag(Player player, Location location, IWrappedFlag<T> flag) {
         AbstractWrappedFlag<T> wrappedFlag = (AbstractWrappedFlag<T>) flag;
-        return queryValue(player, location, wrappedFlag.getHandle()).flatMap(value -> wrappedFlag.fromWGValue(value));
+
+        return queryValue(player, location, wrappedFlag.getHandle()).flatMap(wrappedFlag::fromWGValue);
     }
 
     @Override
@@ -118,7 +188,7 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
                         Map.Entry<IWrappedFlag<?>, Object> wrapped = WorldGuardFlagUtilities.wrap(flag, value);
                         flags.put(wrapped.getKey(), wrapped.getValue());
                     } catch (IllegalArgumentException e) {
-                        continue; // Unsupported flag type
+                        // Unsupported flag type
                     }
                 }
             }
@@ -174,6 +244,11 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
 
         regionSet.forEach(region -> set.add(new WrappedRegion(minimum.getWorld(), region)));
         return set;
+    }
+
+    @Override
+    public Optional<IWrappedRegionSet> getRegionSet(@NonNull Location location) {
+        return getApplicableRegions(location).map(regionSet -> wrapRegionSet(location.getWorld(), regionSet));
     }
 
     @Override

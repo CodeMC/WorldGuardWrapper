@@ -65,6 +65,7 @@ public class WorldGuardFlagUtilities {
 
     public Map.Entry<IWrappedFlag<?>, Object> wrap(Flag<?> flag, Object value) {
         IWrappedFlag<?> wrappedFlag = wrapFixType(flag, value.getClass());
+        //noinspection OptionalGetWithoutIsPresent
         Object wrappedValue = ((AbstractWrappedFlag<?>) wrappedFlag).fromWGValue(value).get(); // value is non-null
         return Maps.immutableEntry(wrappedFlag, wrappedValue);
     }

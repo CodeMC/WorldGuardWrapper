@@ -6,12 +6,15 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
+import org.codemc.worldguardwrapper.handler.IHandler;
 import org.codemc.worldguardwrapper.region.IWrappedRegion;
+import org.codemc.worldguardwrapper.region.IWrappedRegionSet;
 import org.codemc.worldguardwrapper.selection.ICuboidSelection;
 import org.codemc.worldguardwrapper.selection.IPolygonalSelection;
 import org.codemc.worldguardwrapper.selection.ISelection;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 public interface IWorldGuardImplementation {
 
@@ -28,6 +31,8 @@ public interface IWorldGuardImplementation {
      * @return The API version
      */
     int getApiVersion();
+
+    void registerHandler(Supplier<IHandler> factory);
 
     /**
      * Query a flag's value for a given player at a given location.
@@ -118,6 +123,14 @@ public interface IWorldGuardImplementation {
     Set<IWrappedRegion> getRegions(@NonNull Location minimum, @NonNull Location maximum);
 
     /**
+     * Get the applicable region set at the given location-
+     *
+     * @param location The location
+     * @return The region set
+     */
+    Optional<IWrappedRegionSet> getRegionSet(@NonNull Location location);
+
+    /**
      * Add a region. If only two points are given, a cuboid region will be created.
      *
      * @param id     The region ID
@@ -142,7 +155,7 @@ public interface IWorldGuardImplementation {
 
     /**
      * Add a region for the given selection.
-     * 
+     *
      * @param id        The region ID
      * @param selection The selection for the region's volume
      * @return The added region
