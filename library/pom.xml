@@ -19,21 +19,25 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>worldguardwrapper-api</artifactId>
             <version>1.2.0-SNAPSHOT</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>worldguardwrapper-implementation-legacy</artifactId>
             <version>1.2.0-SNAPSHOT</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>worldguardwrapper-implementation-v6</artifactId>
             <version>1.2.0-SNAPSHOT</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>worldguardwrapper-implementation-v7</artifactId>
             <version>1.2.0-SNAPSHOT</version>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
@@ -42,6 +46,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
+                <configuration>
+                    <relocations>
+                        <relocation>
+                            <pattern>javassist</pattern>
+                            <shadedPattern>org.codemc.worldguardwrapper.shaded.javassist</shadedPattern>
+                        </relocation>
+                    </relocations>
+                </configuration>
                 <executions>
                     <execution>
                         <phase>package</phase>

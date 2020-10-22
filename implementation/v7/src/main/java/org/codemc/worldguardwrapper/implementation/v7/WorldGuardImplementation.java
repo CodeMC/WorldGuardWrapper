@@ -1,7 +1,5 @@
 package org.codemc.worldguardwrapper.implementation.v7;
 
-import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.sk89q.minecraft.util.commands.CommandException;
 import com.sk89q.worldedit.IncompleteRegionException;
@@ -23,9 +21,9 @@ import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import com.sk89q.worldguard.session.MoveType;
 import com.sk89q.worldguard.session.Session;
 import com.sk89q.worldguard.session.handler.Handler;
+import javassist.util.proxy.ProxyFactory;
 import lombok.NonNull;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -38,6 +36,7 @@ import org.codemc.worldguardwrapper.flag.WrappedState;
 import org.codemc.worldguardwrapper.handler.IHandler;
 import org.codemc.worldguardwrapper.implementation.IWorldGuardImplementation;
 import org.codemc.worldguardwrapper.implementation.v7.flag.AbstractWrappedFlag;
+import org.codemc.worldguardwrapper.implementation.v7.handler.ProxyHandler;
 import org.codemc.worldguardwrapper.implementation.v7.region.WrappedRegion;
 import org.codemc.worldguardwrapper.implementation.v7.utility.WorldGuardFlagUtilities;
 import org.codemc.worldguardwrapper.region.IWrappedRegion;
@@ -46,7 +45,8 @@ import org.codemc.worldguardwrapper.selection.ICuboidSelection;
 import org.codemc.worldguardwrapper.selection.IPolygonalSelection;
 import org.codemc.worldguardwrapper.selection.ISelection;
 
-import javax.annotation.Nullable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -92,7 +92,7 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
                 .orElse(null), flag));
     }
 
-    private IWrappedRegionSet wrapRegionSet(@NonNull World world, @NonNull ApplicableRegionSet regionSet) {
+    public IWrappedRegionSet wrapRegionSet(@NonNull World world, @NonNull ApplicableRegionSet regionSet) {
         return new IWrappedRegionSet() {
 
             @SuppressWarnings("NullableProblems")
@@ -162,53 +162,29 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
 
     @Override
     public void registerHandler(Supplier<IHandler> factory) {
+        ProxyFactory proxyFactory = new ProxyFactory();
+        proxyFactory.setUseCache(false);
+        proxyFactory.setSuperclass(ProxyHandler.class);
+
+        Class<? extends ProxyHandler> handlerClass;
+        Constructor<? extends ProxyHandler> handlerConstructor;
+        try {
+            //noinspection unchecked
+            handlerClass = (Class<? extends ProxyHandler>) proxyFactory.createClass();
+            handlerConstructor = handlerClass.getDeclaredConstructor(WorldGuardImplementation.class, IHandler.class, Session.class);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+
         core.getPlatform().getSessionManager().registerHandler(new Handler.Factory<Handler>() {
             @Override
             public Handler create(Session session) {
                 IHandler handler = factory.get();
-                return new Handler(session) {
-                    @Override
-                    public void initialize(LocalPlayer player, com.sk89q.worldedit.util.Location current, ApplicableRegionSet set) {
-                        Player bukkitPlayer = BukkitAdapter.adapt(player);
-                        Location bukkitLocation = BukkitAdapter.adapt(current);
-                        handler.initialize(bukkitPlayer, bukkitLocation, wrapRegionSet(bukkitLocation.getWorld(), set));
-                    }
-
-                    @Override
-                    public boolean testMoveTo(LocalPlayer player, com.sk89q.worldedit.util.Location from, com.sk89q.worldedit.util.Location to, ApplicableRegionSet toSet, MoveType moveType) {
-                        Player bukkitPlayer = BukkitAdapter.adapt(player);
-                        Location bukkitFrom = BukkitAdapter.adapt(from);
-                        Location bukkitTo = BukkitAdapter.adapt(to);
-                        return handler.testMoveTo(bukkitPlayer, bukkitFrom, bukkitTo, wrapRegionSet(bukkitTo.getWorld(), toSet), moveType.name());
-                    }
-
-                    @Override
-                    public boolean onCrossBoundary(LocalPlayer player, com.sk89q.worldedit.util.Location from, com.sk89q.worldedit.util.Location to, ApplicableRegionSet toSet, Set<ProtectedRegion> entered, Set<ProtectedRegion> exited, MoveType moveType) {
-                        Player bukkitPlayer = BukkitAdapter.adapt(player);
-                        Location bukkitFrom = BukkitAdapter.adapt(from);
-                        Location bukkitTo = BukkitAdapter.adapt(to);
-                        Set<IWrappedRegion> mappedEntered = ImmutableSet.copyOf(Collections2.transform(entered, region -> new WrappedRegion(bukkitTo.getWorld(), region)));
-                        Set<IWrappedRegion> mappedExited = ImmutableSet.copyOf(Collections2.transform(exited, region -> new WrappedRegion(bukkitFrom.getWorld(), region)));
-                        return handler.onCrossBoundary(bukkitPlayer, bukkitFrom, bukkitTo, wrapRegionSet(bukkitTo.getWorld(), toSet), mappedEntered, mappedExited, moveType.name());
-                    }
-
-                    @Override
-                    public void tick(LocalPlayer player, ApplicableRegionSet set) {
-                        Player bukkitPlayer = BukkitAdapter.adapt(player);
-                        handler.tick(bukkitPlayer, wrapRegionSet(bukkitPlayer.getWorld(), set));
-                    }
-
-                    @Nullable
-                    @Override
-                    public StateFlag.State getInvincibility(LocalPlayer player) {
-                        Player bukkitPlayer = BukkitAdapter.adapt(player);
-                        WrappedState state = handler.getInvincibility(bukkitPlayer);
-                        if (state == null) {
-                            return null;
-                        }
-                        return state == WrappedState.ALLOW ? StateFlag.State.ALLOW : StateFlag.State.DENY;
-                    }
-                };
+                try {
+                    return handlerConstructor.newInstance(WorldGuardImplementation.this, handler, session);
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }, null);
     }

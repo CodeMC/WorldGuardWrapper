@@ -4,7 +4,7 @@ import com.google.common.collect.Maps;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
-
+import lombok.experimental.UtilityClass;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.util.Vector;
@@ -13,8 +13,6 @@ import org.codemc.worldguardwrapper.flag.WrappedState;
 import org.codemc.worldguardwrapper.implementation.v6.flag.AbstractWrappedFlag;
 import org.codemc.worldguardwrapper.implementation.v6.flag.WrappedPrimitiveFlag;
 import org.codemc.worldguardwrapper.implementation.v6.flag.WrappedStatusFlag;
-
-import lombok.experimental.UtilityClass;
 
 import java.util.Map;
 

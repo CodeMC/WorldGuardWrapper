@@ -3,7 +3,6 @@ package org.codemc.worldguardwrapper.implementation.v7.flag;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.Vector3;
 import com.sk89q.worldguard.protection.flags.Flag;
-
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.codemc.worldguardwrapper.implementation.v7.utility.WorldGuardFlagUtilities;

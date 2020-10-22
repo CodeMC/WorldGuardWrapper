@@ -1,7 +1,5 @@
 package org.codemc.worldguardwrapper.implementation.v6;
 
-import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.sk89q.minecraft.util.commands.CommandException;
 import com.sk89q.worldedit.BlockVector;
@@ -18,9 +16,9 @@ import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import com.sk89q.worldguard.session.MoveType;
 import com.sk89q.worldguard.session.Session;
 import com.sk89q.worldguard.session.handler.Handler;
+import javassist.util.proxy.ProxyFactory;
 import lombok.NonNull;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -33,6 +31,7 @@ import org.codemc.worldguardwrapper.flag.WrappedState;
 import org.codemc.worldguardwrapper.handler.IHandler;
 import org.codemc.worldguardwrapper.implementation.IWorldGuardImplementation;
 import org.codemc.worldguardwrapper.implementation.v6.flag.AbstractWrappedFlag;
+import org.codemc.worldguardwrapper.implementation.v6.handler.ProxyHandler;
 import org.codemc.worldguardwrapper.implementation.v6.region.WrappedRegion;
 import org.codemc.worldguardwrapper.implementation.v6.utility.WorldGuardFlagUtilities;
 import org.codemc.worldguardwrapper.implementation.v6.utility.WorldGuardVectorUtilities;
@@ -42,7 +41,8 @@ import org.codemc.worldguardwrapper.selection.ICuboidSelection;
 import org.codemc.worldguardwrapper.selection.IPolygonalSelection;
 import org.codemc.worldguardwrapper.selection.ISelection;
 
-import javax.annotation.Nullable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -86,7 +86,7 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
                 .orElse(null), flag));
     }
 
-    private IWrappedRegionSet wrapRegionSet(@NonNull World world, @NonNull ApplicableRegionSet regionSet) {
+    public IWrappedRegionSet wrapRegionSet(@NonNull World world, @NonNull ApplicableRegionSet regionSet) {
         return new IWrappedRegionSet() {
 
             @SuppressWarnings("NullableProblems")
@@ -156,43 +156,29 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
 
     @Override
     public void registerHandler(Supplier<IHandler> factory) {
+        ProxyFactory proxyFactory = new ProxyFactory();
+        proxyFactory.setUseCache(false);
+        proxyFactory.setSuperclass(ProxyHandler.class);
+
+        Class<? extends ProxyHandler> handlerClass;
+        Constructor<? extends ProxyHandler> handlerConstructor;
+        try {
+            //noinspection unchecked
+            handlerClass = (Class<? extends ProxyHandler>) proxyFactory.createClass();
+            handlerConstructor = handlerClass.getDeclaredConstructor(WorldGuardImplementation.class, IHandler.class, Session.class);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+
         worldGuardPlugin.getSessionManager().registerHandler(new Handler.Factory<Handler>() {
             @Override
             public Handler create(Session session) {
                 IHandler handler = factory.get();
-                return new Handler(session) {
-                    @Override
-                    public void initialize(Player player, Location current, ApplicableRegionSet set) {
-                        handler.initialize(player, current, wrapRegionSet(current.getWorld(), set));
-                    }
-
-                    @Override
-                    public boolean testMoveTo(Player player, Location from, Location to, ApplicableRegionSet toSet, MoveType moveType) {
-                        return handler.testMoveTo(player, from, to, wrapRegionSet(to.getWorld(), toSet), moveType.name());
-                    }
-
-                    @Override
-                    public boolean onCrossBoundary(Player player, Location from, Location to, ApplicableRegionSet toSet, Set<ProtectedRegion> entered, Set<ProtectedRegion> exited, MoveType moveType) {
-                        Set<IWrappedRegion> mappedEntered = ImmutableSet.copyOf(Collections2.transform(entered, region -> new WrappedRegion(to.getWorld(), region)));
-                        Set<IWrappedRegion> mappedExited = ImmutableSet.copyOf(Collections2.transform(exited, region -> new WrappedRegion(from.getWorld(), region)));
-                        return handler.onCrossBoundary(player, from, to, wrapRegionSet(to.getWorld(), toSet), mappedEntered, mappedExited, moveType.name());
-                    }
-
-                    @Override
-                    public void tick(Player player, ApplicableRegionSet set) {
-                        handler.tick(player, wrapRegionSet(player.getWorld(), set));
-                    }
-
-                    @Nullable
-                    @Override
-                    public StateFlag.State getInvincibility(Player player) {
-                        WrappedState state = handler.getInvincibility(player);
-                        if (state == null) {
-                            return null;
-                        }
-                        return state == WrappedState.ALLOW ? StateFlag.State.ALLOW : StateFlag.State.DENY;
-                    }
-                };
+                try {
+                    return handlerConstructor.newInstance(WorldGuardImplementation.this, handler, session);
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }, null);
     }

@@ -10,20 +10,16 @@ import lombok.Getter;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
+import org.codemc.worldguardwrapper.implementation.legacy.flag.AbstractWrappedFlag;
 import org.codemc.worldguardwrapper.implementation.legacy.utility.WorldGuardFlagUtilities;
 import org.codemc.worldguardwrapper.implementation.legacy.utility.WorldGuardVectorUtilities;
-import org.codemc.worldguardwrapper.implementation.legacy.flag.AbstractWrappedFlag;
 import org.codemc.worldguardwrapper.region.IWrappedDomain;
 import org.codemc.worldguardwrapper.region.IWrappedRegion;
 import org.codemc.worldguardwrapper.selection.ICuboidSelection;
 import org.codemc.worldguardwrapper.selection.IPolygonalSelection;
 import org.codemc.worldguardwrapper.selection.ISelection;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor

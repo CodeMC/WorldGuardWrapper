@@ -1,7 +1,6 @@
 package org.codemc.worldguardwrapper.implementation.legacy.flag;
 
 import com.sk89q.worldguard.protection.flags.Flag;
-
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.codemc.worldguardwrapper.implementation.legacy.utility.WorldGuardFlagUtilities;
