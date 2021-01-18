@@ -1,11 +1,10 @@
 package org.codemc.worldguardwrapper.implementation.v7;
 
 import com.google.common.collect.Iterators;
-import com.sk89q.minecraft.util.commands.CommandException;
 import com.sk89q.worldedit.IncompleteRegionException;
+import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
-import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.math.BlockVector2;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Polygonal2DRegion;
@@ -14,7 +13,15 @@ import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
-import com.sk89q.worldguard.protection.flags.*;
+import com.sk89q.worldguard.protection.flags.BooleanFlag;
+import com.sk89q.worldguard.protection.flags.DoubleFlag;
+import com.sk89q.worldguard.protection.flags.EnumFlag;
+import com.sk89q.worldguard.protection.flags.Flag;
+import com.sk89q.worldguard.protection.flags.IntegerFlag;
+import com.sk89q.worldguard.protection.flags.LocationFlag;
+import com.sk89q.worldguard.protection.flags.StateFlag;
+import com.sk89q.worldguard.protection.flags.StringFlag;
+import com.sk89q.worldguard.protection.flags.VectorFlag;
 import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
 import com.sk89q.worldguard.protection.managers.RegionManager;
@@ -47,7 +54,15 @@ import org.codemc.worldguardwrapper.selection.ISelection;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -55,23 +70,15 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
 
     private final WorldGuard core;
     private final FlagRegistry flagRegistry;
-    private final WorldGuardPlugin worldGuardPlugin;
-    private final WorldEditPlugin worldEditPlugin;
 
     public WorldGuardImplementation() {
         core = WorldGuard.getInstance();
         flagRegistry = core.getFlagRegistry();
-        worldGuardPlugin = WorldGuardPlugin.inst();
-        try {
-            worldEditPlugin = worldGuardPlugin.getWorldEdit();
-        } catch (CommandException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private Optional<LocalPlayer> wrapPlayer(OfflinePlayer player) {
         return Optional.ofNullable(player).map(bukkitPlayer -> bukkitPlayer.isOnline() ?
-                worldGuardPlugin.wrapPlayer((Player) bukkitPlayer) : worldGuardPlugin.wrapOfflinePlayer(bukkitPlayer));
+                WorldGuardPlugin.inst().wrapPlayer((Player) bukkitPlayer) : WorldGuardPlugin.inst().wrapOfflinePlayer(bukkitPlayer));
     }
 
     private Optional<RegionManager> getWorldManager(@NonNull World world) {
@@ -348,7 +355,7 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     public Optional<ISelection> getPlayerSelection(@NonNull Player player) {
         Region region;
         try {
-            region = worldEditPlugin.getSession(player).getSelection(BukkitAdapter.adapt(player.getWorld()));
+            region = WorldEdit.getInstance().getSessionManager().get(BukkitAdapter.adapt(player)).getSelection(BukkitAdapter.adapt(player.getWorld()));
         } catch (IncompleteRegionException e) {
             region = null;
         }
