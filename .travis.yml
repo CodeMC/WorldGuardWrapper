@@ -2,7 +2,7 @@ sudo: false
 dist: focal
 language: java
 jdk:
-  - oraclejdk16
+  - openjdk16
 cache:
   directories:
     - '$HOME/.m2/repository'
