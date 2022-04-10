@@ -17,7 +17,7 @@
     <repositories>
         <repository>
             <id>sk89q-repo</id>
-            <url>http://maven.sk89q.com/repo/</url>
+            <url>https://maven.sk89q.com/repo/</url>
             <snapshots>
                 <updatePolicy>always</updatePolicy>
             </snapshots>
