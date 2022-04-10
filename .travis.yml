@@ -1,8 +1,0 @@
-sudo: false
-dist: focal
-language: java
-jdk:
-  - openjdk16
-cache:
-  directories:
-    - '$HOME/.m2/repository'
