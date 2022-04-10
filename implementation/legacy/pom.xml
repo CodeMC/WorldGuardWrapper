@@ -8,6 +8,7 @@
         <groupId>org.codemc.worldguardwrapper</groupId>
         <artifactId>worldguardwrapper-implementation</artifactId>
         <version>1.2.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>worldguardwrapper-implementation-legacy</artifactId>
@@ -36,6 +37,36 @@
             <artifactId>worldguard</artifactId>
             <version>6.1</version>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.sk89q.spigot</groupId>
+                    <artifactId>bukkit-classloader-check</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.bukkit</groupId>
+                    <artifactId>bukkit</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sk89q</groupId>
+                    <artifactId>commandbook</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>de.schlichtherle</groupId>
+                    <artifactId>truezip</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>rhino</groupId>
+                    <artifactId>js</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sk89q</groupId>
+                    <artifactId>jchronic</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.code.findbugs</groupId>
+                    <artifactId>jsr305</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 </project>

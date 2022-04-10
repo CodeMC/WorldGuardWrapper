@@ -8,6 +8,7 @@
         <groupId>org.codemc.worldguardwrapper</groupId>
         <artifactId>worldguardwrapper-implementation</artifactId>
         <version>1.2.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>worldguardwrapper-implementation-v6</artifactId>
@@ -46,7 +47,7 @@
         <dependency>
             <groupId>com.sk89q.worldedit</groupId>
             <artifactId>worldedit-core</artifactId>
-            <version>6.1.4-SNAPSHOT</version>
+            <version>6.1.3-SNAPSHOT</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -80,6 +81,10 @@
                 <exclusion>
                     <groupId>com.sk89q</groupId>
                     <artifactId>jchronic</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.code.findbugs</groupId>
+                    <artifactId>jsr305</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

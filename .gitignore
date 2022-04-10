@@ -65,8 +65,5 @@ nbactions.xml
 nb-configuration.xml
 .nb-gradle/
 
-# Git
-!.gitignore
-
 # VSCode
 .vscode/
