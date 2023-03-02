@@ -38,6 +38,8 @@ public class WorldGuardFlagUtilities {
             wrappedFlag = new WrappedPrimitiveFlag(flag);
         } else if (type.equals(Vector.class)) {
             wrappedFlag = new WrappedPrimitiveFlag(flag);
+        } else if (type.equals(Object.class)) {
+            wrappedFlag = new WrappedPrimitiveFlag(flag);
         } else {
             throw new IllegalArgumentException("Unsupported flag type " + type.getName());
         }
