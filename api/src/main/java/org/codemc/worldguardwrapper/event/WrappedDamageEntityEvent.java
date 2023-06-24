@@ -1,6 +1,7 @@
 package org.codemc.worldguardwrapper.event;
 
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -20,10 +21,12 @@ public class WrappedDamageEntityEvent extends AbstractWrappedEvent {
     private final Entity entity;
 
     @Override
+    @NonNull
     public HandlerList getHandlers() {
         return handlers;
     }
 
+    @SuppressWarnings("unused")
     public static HandlerList getHandlerList() {
         return handlers;
     }

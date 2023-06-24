@@ -8,17 +8,31 @@ import org.codemc.worldguardwrapper.region.IWrappedRegionSet;
 
 import java.util.Set;
 
+@SuppressWarnings("unused")
 public interface IHandler {
 
     default void initialize(Player player, Location current, IWrappedRegionSet regionSet) {
     }
 
-    default boolean testMoveTo(Player player, Location from, Location to, IWrappedRegionSet regionSet, String moveType) {
+    default boolean testMoveTo(
+            Player player,
+            Location from,
+            Location to,
+            IWrappedRegionSet regionSet,
+            String moveType
+    ) {
         return true;
     }
 
-    default boolean onCrossBoundary(Player player, Location from, Location to, IWrappedRegionSet toSet,
-                                    Set<IWrappedRegion> entered, Set<IWrappedRegion> exited, String moveType) {
+    default boolean onCrossBoundary(
+            Player player,
+            Location from,
+            Location to,
+            IWrappedRegionSet toSet,
+            Set<IWrappedRegion> entered,
+            Set<IWrappedRegion> exited,
+            String moveType
+    ) {
         return true;
     }
 

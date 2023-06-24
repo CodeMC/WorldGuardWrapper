@@ -16,6 +16,7 @@ import org.codemc.worldguardwrapper.selection.ISelection;
 import java.util.*;
 import java.util.function.Supplier;
 
+@SuppressWarnings("unused")
 public interface IWorldGuardImplementation {
 
     /**
@@ -58,7 +59,7 @@ public interface IWorldGuardImplementation {
      *
      * @param name The flag name
      * @param type The flag type
-     * @return The flag, empty if it doesn't exists
+     * @return The flag, empty if it doesn't exist
      */
     <T> Optional<IWrappedFlag<T>> getFlag(String name, Class<T> type);
 
@@ -149,7 +150,11 @@ public interface IWorldGuardImplementation {
      * @param point2 The second point of the region
      * @return The added region
      */
-    default Optional<IWrappedRegion> addCuboidRegion(@NonNull String id, @NonNull Location point1, @NonNull Location point2) {
+    default Optional<IWrappedRegion> addCuboidRegion(
+            @NonNull String id,
+            @NonNull Location point1,
+            @NonNull Location point2
+    ) {
         return addRegion(id, Arrays.asList(point1, point2), 0, 0);
     }
 
@@ -168,7 +173,8 @@ public interface IWorldGuardImplementation {
             IPolygonalSelection sel = (IPolygonalSelection) selection;
             return addRegion(id, new ArrayList<>(sel.getPoints()), sel.getMinimumY(), sel.getMaximumY());
         } else {
-            throw new UnsupportedOperationException("Unknown " + selection.getClass().getSimpleName() + " selection type!");
+            throw new UnsupportedOperationException("Unknown " + selection.getClass().getSimpleName()
+                    + " selection type!");
         }
     }
 

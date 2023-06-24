@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
+@SuppressWarnings("unused")
 public interface IWrappedRegionSet extends Iterable<IWrappedRegion> {
 
     boolean isVirtual();

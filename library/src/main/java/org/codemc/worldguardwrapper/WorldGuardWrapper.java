@@ -6,6 +6,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.codemc.worldguardwrapper.implementation.IWorldGuardImplementation;
 
+
+@SuppressWarnings("unused")
 public class WorldGuardWrapper implements IWorldGuardImplementation {
 
     private static WorldGuardWrapper instance;
@@ -23,8 +25,8 @@ public class WorldGuardWrapper implements IWorldGuardImplementation {
     }
 
     @Delegate
-    private IWorldGuardImplementation implementation;
-    private Listener listener;
+    private final IWorldGuardImplementation implementation;
+    private final Listener listener;
 
     private WorldGuardWrapper() {
         int targetVersion;
@@ -46,15 +48,6 @@ public class WorldGuardWrapper implements IWorldGuardImplementation {
             implementation = new org.codemc.worldguardwrapper.implementation.legacy.WorldGuardImplementation();
             listener = new org.codemc.worldguardwrapper.implementation.legacy.event.EventListener();
         } else {
-            /*
-            if (Bukkit.getPluginManager().isPluginEnabled("FastAsyncWorldEdit")) {
-                implementation = new org.codemc.worldguardwrapper.implementation.v7fawe.WorldGuardImplementation();
-                listener = new org.codemc.worldguardwrapper.implementation.v7fawe.event.EventListener();
-            } else {
-                implementation = new org.codemc.worldguardwrapper.implementation.v7.WorldGuardImplementation();
-                listener = new org.codemc.worldguardwrapper.implementation.v7.event.EventListener();
-            }
-            */
             implementation = new org.codemc.worldguardwrapper.implementation.v7.WorldGuardImplementation();
             listener = new org.codemc.worldguardwrapper.implementation.v7.event.EventListener();
         }

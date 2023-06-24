@@ -1,6 +1,7 @@
 package org.codemc.worldguardwrapper.event;
 
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -24,10 +25,12 @@ public class WrappedUseBlockEvent extends AbstractWrappedEvent {
     private final Material effectiveMaterial;
 
     @Override
+    @NonNull
     public HandlerList getHandlers() {
         return handlers;
     }
 
+    @SuppressWarnings("unused")
     public static HandlerList getHandlerList() {
         return handlers;
     }

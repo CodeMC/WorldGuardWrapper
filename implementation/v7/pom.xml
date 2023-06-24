@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.codemc.worldguardwrapper</groupId>
         <artifactId>worldguardwrapper-implementation</artifactId>
-        <version>1.2.0-SNAPSHOT</version>
+        <version>1.2.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -29,13 +29,13 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>worldguardwrapper-api</artifactId>
-            <version>1.2.0-SNAPSHOT</version>
+            <version>1.2.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.sk89q.worldguard</groupId>
             <artifactId>worldguard-bukkit</artifactId>
-            <version>7.0.7</version>
+            <version>7.0.8</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>

@@ -17,6 +17,7 @@ import org.codemc.worldguardwrapper.implementation.v6.region.WrappedRegion;
 import org.codemc.worldguardwrapper.region.IWrappedRegion;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.Set;
 
 public class ProxyHandler extends Handler {
@@ -32,19 +33,48 @@ public class ProxyHandler extends Handler {
 
     @Override
     public void initialize(Player player, Location current, ApplicableRegionSet set) {
-        handler.initialize(player, current, implementation.wrapRegionSet(current.getWorld(), set));
+        handler.initialize(
+                player,
+                current,
+                implementation.wrapRegionSet(Objects.requireNonNull(current.getWorld()), set)
+        );
     }
 
     @Override
     public boolean testMoveTo(Player player, Location from, Location to, ApplicableRegionSet toSet, MoveType moveType) {
-        return handler.testMoveTo(player, from, to, implementation.wrapRegionSet(to.getWorld(), toSet), moveType.name());
+        return handler.testMoveTo(player,
+                from,
+                to,
+                implementation.wrapRegionSet(Objects.requireNonNull(to.getWorld()), toSet),
+                moveType.name()
+        );
     }
 
     @Override
-    public boolean onCrossBoundary(Player player, Location from, Location to, ApplicableRegionSet toSet, Set<ProtectedRegion> entered, Set<ProtectedRegion> exited, MoveType moveType) {
-        Set<IWrappedRegion> mappedEntered = ImmutableSet.copyOf(Collections2.transform(entered, region -> new WrappedRegion(to.getWorld(), region)));
-        Set<IWrappedRegion> mappedExited = ImmutableSet.copyOf(Collections2.transform(exited, region -> new WrappedRegion(from.getWorld(), region)));
-        return handler.onCrossBoundary(player, from, to, implementation.wrapRegionSet(to.getWorld(), toSet), mappedEntered, mappedExited, moveType.name());
+    public boolean onCrossBoundary(
+            Player player,
+            Location from,
+            Location to,
+            ApplicableRegionSet toSet,
+            Set<ProtectedRegion> entered,
+            Set<ProtectedRegion> exited,
+            MoveType moveType
+    ) {
+        Set<IWrappedRegion> mappedEntered = ImmutableSet.copyOf(
+                Collections2.transform(entered, region -> new WrappedRegion(to.getWorld(), region))
+        );
+        Set<IWrappedRegion> mappedExited = ImmutableSet.copyOf(
+                Collections2.transform(exited, region -> new WrappedRegion(from.getWorld(), region))
+        );
+        return handler.onCrossBoundary(
+                player,
+                from,
+                to,
+                implementation.wrapRegionSet(Objects.requireNonNull(to.getWorld()), toSet),
+                mappedEntered,
+                mappedExited,
+                moveType.name()
+        );
     }
 
     @Override

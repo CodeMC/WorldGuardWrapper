@@ -10,6 +10,7 @@ A wrapper for the WorldGuard API that allows plugins to support both v6 and v7 A
 How to include WorldEditWrapper into your maven project:
 
 ```xml
+<project>
     <repositories>
         <repository>
             <id>codemc-repo</id>
@@ -21,9 +22,10 @@ How to include WorldEditWrapper into your maven project:
         <dependency>
             <groupId>org.codemc.worldguardwrapper</groupId>
             <artifactId>worldguardwrapper</artifactId>
-            <version>1.2.0-SNAPSHOT</version>
+            <version>1.2.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
+</project>
 ```
 
 Remember to include/relocate the library into your final jar, example:

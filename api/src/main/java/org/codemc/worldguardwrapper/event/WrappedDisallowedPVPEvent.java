@@ -1,6 +1,7 @@
 package org.codemc.worldguardwrapper.event;
 
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -17,10 +18,12 @@ public class WrappedDisallowedPVPEvent extends AbstractWrappedEvent {
     private final Event cause;
 
     @Override
+    @NonNull
     public HandlerList getHandlers() {
         return handlers;
     }
 
+    @SuppressWarnings("unused")
     public static HandlerList getHandlerList() {
         return handlers;
     }

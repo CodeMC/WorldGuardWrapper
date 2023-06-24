@@ -62,23 +62,31 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     }
 
     private Optional<ApplicableRegionSet> getApplicableRegions(@NonNull Location location) {
-        return getWorldManager(location.getWorld()).map(manager -> manager.getApplicableRegions(location));
+        return getWorldManager(Objects.requireNonNull(location.getWorld()))
+                .map(manager -> manager.getApplicableRegions(location));
     }
 
     private Optional<ApplicableRegionSet> getApplicableRegions(@NonNull Location minimum, @NonNull Location maximum) {
-        return getWorldManager(minimum.getWorld()).map(manager -> manager.getApplicableRegions(
-                new ProtectedCuboidRegion("temp", WorldGuardVectorUtilities.toBlockVector(minimum), WorldGuardVectorUtilities.toBlockVector(maximum))));
+        return getWorldManager(Objects.requireNonNull(minimum.getWorld()))
+                .map(manager ->
+                        manager.getApplicableRegions(
+                                new ProtectedCuboidRegion(
+                                        "temp",
+                                        WorldGuardVectorUtilities.toBlockVector(minimum),
+                                        WorldGuardVectorUtilities.toBlockVector(maximum)
+                                )
+                        )
+                );
     }
 
     private <V> Optional<V> queryValue(Player player, @NonNull Location location, @NonNull Flag<V> flag) {
-        return getApplicableRegions(location).map(applicableRegions -> applicableRegions.queryValue(wrapPlayer(player)
-                .orElse(null), flag));
+        return getApplicableRegions(location)
+                .map(applicableRegions -> applicableRegions.queryValue(wrapPlayer(player).orElse(null), flag));
     }
 
     private IWrappedRegionSet wrapRegionSet(@NonNull World world, @NonNull ApplicableRegionSet regionSet) {
         return new IWrappedRegionSet() {
 
-            @SuppressWarnings("NullableProblems")
             @Override
             public Iterator<IWrappedRegion> iterator() {
                 return Iterators.transform(regionSet.iterator(), region -> new WrappedRegion(world, region));
@@ -159,7 +167,7 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     }
 
     @Override
-    public <T> Optional<T> queryFlag(Player player, Location location, IWrappedFlag<T> flag) {
+    public <T> Optional<T> queryFlag(Player player, @NonNull Location location, @NonNull IWrappedFlag<T> flag) {
         AbstractWrappedFlag<T> wrappedFlag = (AbstractWrappedFlag<T>) flag;
 
         return queryValue(player, location, wrappedFlag.getHandle()).flatMap(wrappedFlag::fromWGValue);
@@ -198,19 +206,19 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     }
 
     @Override
-    public <T> Optional<IWrappedFlag<T>> registerFlag(String name, Class<T> type, T defaultValue) {
+    public <T> Optional<IWrappedFlag<T>> registerFlag(@NonNull String name, @NonNull Class<T> type, T defaultValue) {
         throw new UnsupportedOperationException("Custom flags aren't supported in this version of WorldGuard!");
     }
 
     @Override
-    public Optional<IWrappedRegion> getRegion(World world, String id) {
+    public Optional<IWrappedRegion> getRegion(@NonNull World world, @NonNull String id) {
         return getWorldManager(world)
                 .map(regionManager -> regionManager.getRegion(id))
                 .map(region -> new WrappedRegion(world, region));
     }
 
     @Override
-    public Map<String, IWrappedRegion> getRegions(World world) {
+    public Map<String, IWrappedRegion> getRegions(@NonNull World world) {
         RegionManager regionManager = worldGuardPlugin.getRegionManager(world);
         Map<String, ProtectedRegion> regions = regionManager.getRegions();
 
@@ -221,7 +229,7 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     }
 
     @Override
-    public Set<IWrappedRegion> getRegions(Location location) {
+    public Set<IWrappedRegion> getRegions(@NonNull Location location) {
         ApplicableRegionSet regionSet = getApplicableRegions(location).orElse(null);
         Set<IWrappedRegion> set = new HashSet<>();
 
@@ -234,7 +242,7 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     }
 
     @Override
-    public Set<IWrappedRegion> getRegions(Location minimum, Location maximum) {
+    public Set<IWrappedRegion> getRegions(@NonNull Location minimum, @NonNull Location maximum) {
         ApplicableRegionSet regionSet = getApplicableRegions(minimum, maximum).orElse(null);
         Set<IWrappedRegion> set = new HashSet<>();
 
@@ -248,17 +256,27 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
 
     @Override
     public Optional<IWrappedRegionSet> getRegionSet(@NonNull Location location) {
-        return getApplicableRegions(location).map(regionSet -> wrapRegionSet(location.getWorld(), regionSet));
+        return getApplicableRegions(location)
+                .map(regionSet -> wrapRegionSet(Objects.requireNonNull(location.getWorld()), regionSet));
     }
 
     @Override
-    public Optional<IWrappedRegion> addRegion(String id, List<Location> points, int minY, int maxY) {
+    public Optional<IWrappedRegion> addRegion(@NonNull String id, @NonNull List<Location> points, int minY, int maxY) {
         ProtectedRegion region;
-        World world = points.get(0).getWorld();
+        World world = Objects.requireNonNull(points.get(0).getWorld());
         if (points.size() == 2) {
-            region = new ProtectedCuboidRegion(id, WorldGuardVectorUtilities.toBlockVector(points.get(0)), WorldGuardVectorUtilities.toBlockVector(points.get(1)));
+            region = new ProtectedCuboidRegion(
+                    id,
+                    WorldGuardVectorUtilities.toBlockVector(points.get(0)),
+                    WorldGuardVectorUtilities.toBlockVector(points.get(1))
+            );
         } else {
-            region = new ProtectedPolygonalRegion(id, WorldGuardVectorUtilities.toBlockVector2DList(points), minY, maxY);
+            region = new ProtectedPolygonalRegion(
+                    id,
+                    WorldGuardVectorUtilities.toBlockVector2DList(points),
+                    minY,
+                    maxY
+            );
         }
 
         Optional<RegionManager> manager = getWorldManager(world);
@@ -271,7 +289,7 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
     }
 
     @Override
-    public Optional<Set<IWrappedRegion>> removeRegion(World world, String id) {
+    public Optional<Set<IWrappedRegion>> removeRegion(@NonNull World world, @NonNull String id) {
         Optional<Set<ProtectedRegion>> set = getWorldManager(world).map(manager -> manager.removeRegion(id));
         return set.map(protectedRegions -> protectedRegions.stream().map(region -> new WrappedRegion(world, region))
                 .collect(Collectors.toSet()));
@@ -299,7 +317,12 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
                             public Set<Location> getPoints() {
                                 return ((Polygonal2DSelection) selection).getNativePoints().stream()
                                         .map(vector -> new BlockVector(vector.toVector()))
-                                        .map(vector -> WorldGuardVectorUtilities.fromBlockVector(selection.getWorld(), vector))
+                                        .map(vector ->
+                                                WorldGuardVectorUtilities.fromBlockVector(
+                                                        selection.getWorld(),
+                                                        vector
+                                                )
+                                        )
                                         .collect(Collectors.toSet());
                             }
 
@@ -314,7 +337,8 @@ public class WorldGuardImplementation implements IWorldGuardImplementation {
                             }
                         };
                     } else {
-                        throw new UnsupportedOperationException("Unsupported " + selection.getClass().getSimpleName() + " selection!");
+                        throw new UnsupportedOperationException("Unsupported " + selection.getClass().getSimpleName()
+                                + " selection!");
                     }
                 });
     }

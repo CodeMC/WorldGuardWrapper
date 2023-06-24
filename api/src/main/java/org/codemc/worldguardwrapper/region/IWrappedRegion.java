@@ -7,6 +7,7 @@ import org.codemc.worldguardwrapper.selection.ISelection;
 import java.util.Map;
 import java.util.Optional;
 
+@SuppressWarnings("unused")
 public interface IWrappedRegion {
 
     ISelection getSelection();
