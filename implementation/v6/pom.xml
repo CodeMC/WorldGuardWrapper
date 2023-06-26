@@ -47,7 +47,7 @@
         <dependency>
             <groupId>com.sk89q.worldedit</groupId>
             <artifactId>worldedit-core</artifactId>
-            <version>6.1.3-SNAPSHOT</version>
+            <version>7.2.15</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
